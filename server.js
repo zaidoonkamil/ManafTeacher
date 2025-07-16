@@ -6,6 +6,7 @@ const courseRoutes = require("./routes/course");
 const lessonRoutes = require("./routes/lesson");
 const notifications = require("./routes/notifications.js");
 const examRoutes = require('./routes/exam');
+require("dotenv").config();
 
 
 const app = express();
@@ -24,7 +25,8 @@ app.use("/", lessonRoutes);
 app.use("/", notifications);
 app.use("/", examRoutes);
 
+const PORT = process.env.APP_PORT || 8000;
 
-app.listen( 8000 , () => {
-    console.log(`🚀 Server running on http://localhost:8000`);
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
