@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const sequelize = require("./config/db");
 const usersRouter = require("./routes/user");
@@ -6,7 +7,6 @@ const courseRoutes = require("./routes/course");
 const lessonRoutes = require("./routes/lesson");
 const notifications = require("./routes/notifications.js");
 const examRoutes = require('./routes/exam');
-require("dotenv").config();
 
 
 const app = express();
