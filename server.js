@@ -25,7 +25,7 @@ app.use("/", lessonRoutes);
 app.use("/", notifications);
 app.use("/", examRoutes);
 
-const PORT = process.env.APP_PORT || 8000;
+const PORT = 8000;
 
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
