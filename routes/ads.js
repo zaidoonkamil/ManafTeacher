@@ -35,13 +35,22 @@ router.post("/ads", upload.array("images", 5), async (req, res) => {
 });
 
 router.get("/ads", async (req, res) => {
-    try{
-    const ads = await Ads.findAll();
-    res.json(ads);
-} catch (err) {
-    console.error("❌ Error creating ads:", err);
-    res.status(500).json({ error: "Internal Server Error" });
-}
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+
+        const { count, rows: ads } = await Ads.findAndCountAll({
+            offset,
+            limit,
+            order: [['createdAt', 'DESC']]
+        });
+
+        res.json({total: count, page, totalPages: Math.ceil(count / limit), ads });
+    } catch (err) {
+        console.error("❌ Error fetching ads:", err);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
 });
 
 router.delete("/ads/:id", async (req, res) => {
