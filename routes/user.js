@@ -29,7 +29,7 @@ const authenticateToken = (req, res, next) => {
 };
 
 router.post("/users", upload.none() ,async (req, res) => {
-    const { name, phone , location ,password , role = 'user'} = req.body;
+    const { name, phone , password , role = 'user'} = req.body;
     
     try {
         const existingUser = await User.findOne({ where: { phone } });
@@ -43,13 +43,12 @@ router.post("/users", upload.none() ,async (req, res) => {
         }
     
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-        const user = await User.create({ name, phone, location, password: hashedPassword, role });
+        const user = await User.create({ name, phone, password: hashedPassword, role });
 
         res.status(201).json({
         id: user.id,
         name: user.name,
         phone: user.phone,
-        location: user.location,
         role: role,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
@@ -83,7 +82,6 @@ router.post("/login", upload.none() ,async (req, res) => {
             id: user.id,
             name: user.name,
             phone: user.phone,
-            location: user.location,
             role: user.role,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt
