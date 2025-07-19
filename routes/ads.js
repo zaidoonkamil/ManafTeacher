@@ -1,22 +1,12 @@
 const express = require("express");
 const Ads = require("../models/ads");
 const router = express.Router();
-const multer = require("multer");
 const upload = require("../middlewares/uploads");
 const { sendNotificationToRole } = require('../services/notifications');
 
-router.post("/ads", (req, res, next) => {
-  upload.array("images", 5)(req, res, function (err) {
-    if (err instanceof multer.MulterError) {
-      return res.status(400).json({ error: "خطأ في رفع الصور: " + err.message });
-    } else if (err) {
-      return res.status(400).json({ error: err.message });
-    }
-    next();
-  });
-}, async (req, res) => {
+router.post("/ads", upload.array("images", 5), async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { title, description } = req.body;
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: "جميع الحقول مطلوبة" });
     }
@@ -25,12 +15,12 @@ router.post("/ads", (req, res, next) => {
 
     const ads = await Ads.create({
       images,
-      title: name,
+      title,
       description: description,
     });
 
     
-    await sendNotificationToRole("user", description, name );
+    await sendNotificationToRole("user", description, title );
 
     res.status(201).json({ message: "ads created successfully", ads });
   } catch (err) {
