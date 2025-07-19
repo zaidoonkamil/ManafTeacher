@@ -18,9 +18,14 @@ router.post("/ads", upload.array("images", 5), async (req, res) => {
       title,
       description: description,
     });
+    console.log("✅ Ad saved successfully");
 
-    
-    await sendNotificationToRole("user", description, title );
+    try {
+      await sendNotificationToRole("user", description, title);
+      console.log("✅ Notification sent successfully");
+    } catch (notifyErr) {
+      console.error("❌ Error sending notification:", notifyErr);
+    }
 
     res.status(201).json({ message: "ads created successfully", ads });
   } catch (err) {
