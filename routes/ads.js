@@ -1,6 +1,7 @@
 const express = require("express");
 const Ads = require("../models/ads");
 const router = express.Router();
+const multer = require("multer");
 const upload = require("../middlewares/uploads");
 const { sendNotificationToRole } = require('../services/notifications');
 
