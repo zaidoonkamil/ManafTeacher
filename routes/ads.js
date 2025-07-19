@@ -6,7 +6,7 @@ const { sendNotificationToRole } = require('../services/notifications');
 
 router.post("/ads", upload.array("images", 5), async (req, res) => {
   try {
-    const { name, description } = req.body;
+    const { title, description } = req.body;
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: "جميع الحقول مطلوبة" });
     }
@@ -15,12 +15,12 @@ router.post("/ads", upload.array("images", 5), async (req, res) => {
 
     const ads = await Ads.create({
       images,
-      title: name,
+      title: title,
       description: description,
     });
 
     
-    await sendNotificationToRole("user", description, name );
+    await sendNotificationToRole("user", description, title );
 
     res.status(201).json({ message: "ads created successfully", ads });
   } catch (err) {
