@@ -1,17 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const Lesson = require('../models/lesson');
-const multer = require("multer");
-const upload = multer();
+const upload = require("../middlewares/uploads");
 
 
-router.post("/lessons", upload.none(), async (req, res) => {
+router.post("/lessons", upload.array("images", 5), async (req, res) => {
   try {
     const { title, videoUrl, description, courseId, pdfUrl} = req.body;
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({ error: "جميع الحقول مطلوبة" });
+    }
+
+    const images = req.files.map(file => file.filename);
 
     const lesson = await Lesson.create({
       title,
       videoUrl,
+      images,
       description,
       courseId,
       pdfUrl: pdfUrl || null

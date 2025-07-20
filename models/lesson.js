@@ -7,6 +7,10 @@ const Lesson = sequelize.define('Lesson', {
     type: DataTypes.STRING,
     allowNull: false
   },
+  images: {
+    type: DataTypes.JSON,
+    allowNull: false
+  },
   videoUrl: {
     type: DataTypes.STRING
   },

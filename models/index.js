@@ -1,7 +1,7 @@
 const User = require("./user");
 const UserDevice = require("./user_device");
 const Course = require("./course");
-//const UserCourses = require("./UserCourses");
+const UserCourses = require("./UserCourses");
 const Question = require("./question");
 const Choice = require("./choice");
 const ExamAnswer = require('./examAnswer');
@@ -11,9 +11,21 @@ const QuestionAnswer = require('./questionAnswer');
 User.hasMany(UserDevice, { foreignKey: 'user_id', as: 'devices', onDelete: 'CASCADE' });
 UserDevice.belongsTo(User, { foreignKey: 'user_id', as: 'user', onDelete: 'CASCADE' });
 
-// علاقات الكورسات مع المستخدمين (اشتراكات)
-//User.belongsToMany(Course, { through: UserCourses, foreignKey: 'userId', otherKey: 'courseId', as: 'courses', onDelete: 'CASCADE' });
-//Course.belongsToMany(User, { through: UserCourses, foreignKey: 'courseId', otherKey: 'userId', as: 'users', onDelete: 'CASCADE' });
+User.belongsToMany(Course, {
+  through: UserCourses,
+  foreignKey: 'userId',
+  otherKey: 'courseId',
+  as: 'courses',
+  onDelete: 'CASCADE'
+});
+
+Course.belongsToMany(User, {
+  through: UserCourses,
+  foreignKey: 'courseId',
+  otherKey: 'userId',
+  as: 'users',
+  onDelete: 'CASCADE'
+})
 
 // سؤال يحتوي على عدة اختيارات
 Question.hasMany(Choice, { foreignKey: 'questionId', as: 'choices', onDelete: 'CASCADE' });
@@ -31,7 +43,7 @@ module.exports = {
   User,
   UserDevice,
   Course,
-// UserCourses,
+ UserCourses,
   Question,
   ExamAnswer,
   QuestionAnswer,
