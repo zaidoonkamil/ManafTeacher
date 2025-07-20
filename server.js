@@ -16,10 +16,7 @@ app.use("/uploads", express.static("./" + "uploads"));
 
 sequelize.sync({ alter: true })
     .then(() => console.log("✅ Database & User table synced!"))
-  .catch((err) => {
-    console.error("❌ Error syncing database:", err.message); // اطبع الرسالة
-    console.error(err); // اطبع كامل الخطأ
-  });
+    .catch(err => console.error("❌ Error syncing database:", err));
 
 
 app.use("/", usersRouter);
