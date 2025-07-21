@@ -271,16 +271,7 @@ router.get("/questionsBulk/:examId", async (req, res) => {
 
     const questions = await Question.findAll({
       where: { examId },
-      include: [
-        {
-          model: Choice,
-          as: 'choices'
-        },
-        {
-          model: Exam,
-          as: 'exam'
-        }
-      ],
+      attributes: ['id', 'text'], 
       order: [['id', 'ASC']]
     });
 
@@ -291,10 +282,11 @@ router.get("/questionsBulk/:examId", async (req, res) => {
     res.status(200).json(questions);
 
   } catch (err) {
-    console.error("❌ Error fetching questions:", err);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("❌ Error fetching bulk questions:", err);
+    res.status(500).json({ error: "حدث خطأ في السيرفر" });
   }
 });
+
 
 router.post("/submit-text-answer", upload.array("images",5), async (req, res) => {
   try {
