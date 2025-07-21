@@ -7,6 +7,11 @@ const Question = sequelize.define('Question', {
     type: DataTypes.STRING,
     allowNull: false
   },
+  type: {
+    type: DataTypes.ENUM('multiple_choice', 'text'),
+    defaultValue: 'multiple_choice',
+    allowNull: false
+  },
   examId: {
     type: DataTypes.INTEGER,
     allowNull: false,

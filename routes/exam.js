@@ -84,7 +84,10 @@ router.get("/questions/:examId", async (req, res) => {
     const { examId } = req.params;
 
     const questions = await Question.findAll({
-      where: { examId },
+      where: {
+        examId,
+        type: 'multiple_choice'
+      },
       include: [
         {
           model: Choice,
@@ -105,6 +108,7 @@ router.get("/questions/:examId", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 router.post("/submit-exam", async (req, res) => {
   try {
@@ -233,30 +237,33 @@ router.post("/questions/bulk", upload.none(), async (req, res) => {
   try {
     const { examId, questions } = req.body;
 
-    if (!examId || !Array.isArray(questions) || questions.length === 0) {
+    const parsedQuestions = typeof questions === 'string' ? JSON.parse(questions) : questions;
+
+    if (!examId || !Array.isArray(parsedQuestions) || parsedQuestions.length === 0) {
       return res.status(400).json({ error: "examId و questions مطلوبان" });
     }
 
     const createdQuestions = [];
 
-    for (let text of questions) {
-      if (typeof text === 'string' && text.trim() !== '') {
+    for (const q of parsedQuestions) {
+      if (q.type === 'text' && typeof q.text === 'string' && q.text.trim() !== '') {
         const question = await Question.create({
-          text: text.trim(),
-          examId
+          text: q.text.trim(),
+          examId,
+          type: 'text'
         });
         createdQuestions.push(question);
       }
     }
 
     res.status(201).json({
-      message: "تمت إضافة الأسئلة بنجاح",
+      message: "تمت إضافة الأسئلة النصية بنجاح",
       count: createdQuestions.length,
       questions: createdQuestions
     });
 
   } catch (err) {
-    console.error("❌ Error creating bulk questions:", err);
+    console.error("❌ Error creating bulk text questions:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
@@ -270,8 +277,8 @@ router.get("/questionsBulk/:examId", async (req, res) => {
     }
 
     const questions = await Question.findAll({
-      where: { examId },
-      attributes: ['id', 'text'], 
+      where: { examId , type: 'text'},
+      attributes: ['id', 'text'],
       order: [['id', 'ASC']]
     });
 
