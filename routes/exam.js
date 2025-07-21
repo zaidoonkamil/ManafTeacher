@@ -40,25 +40,41 @@ router.get("/exams", async (req, res) => {
 }
 );
 
-router.post("/questions",async (req, res) => {
+router.post("/questions", async (req, res) => {
   try {
-    const { text, examId, choices } = req.body;
+    const { examId, questions } = req.body;
 
-    const question = await Question.create({ text, examId });
-
-    for (let choice of choices) {
-      await Choice.create({
-        text: choice.text,
-        isCorrect: choice.isCorrect,
-        questionId: question.id
-      });
+    if (!Array.isArray(questions)) {
+      return res.status(400).json({ error: "الأسئلة يجب أن تكون في مصفوفة" });
     }
 
-    res.status(201).json({ message: "Question created", question });
+    const createdQuestions = [];
+
+    for (const q of questions) {
+      const question = await Question.create({
+        text: q.text,
+        examId: examId
+      });
+
+      for (const choice of q.choices) {
+        await Choice.create({
+          text: choice.text,
+          isCorrect: choice.isCorrect,
+          questionId: question.id
+        });
+      }
+
+      createdQuestions.push(question);
+    }
+
+    res.status(201).json({
+      message: "تم إنشاء جميع الأسئلة بنجاح",
+      questions: createdQuestions
+    });
 
   } catch (err) {
-    console.error("❌ Error creating question:", err);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("❌ خطأ أثناء إنشاء الأسئلة:", err);
+    res.status(500).json({ error: "حدث خطأ في الخادم" });
   }
 });
 
@@ -185,6 +201,8 @@ router.post("/questions/bulk", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
+
 
 router.post("/submit-text-answer", upload.array("images",5), async (req, res) => {
   try {
