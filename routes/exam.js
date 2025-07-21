@@ -261,6 +261,41 @@ router.post("/questions/bulk", upload.none(), async (req, res) => {
   }
 });
 
+router.get("/questions/:examId", async (req, res) => {
+  try {
+    const { examId } = req.params;
+
+    if (!examId) {
+      return res.status(400).json({ error: "examId مطلوب" });
+    }
+
+    const questions = await Question.findAll({
+      where: { examId },
+      include: [
+        {
+          model: Choice,
+          as: 'choices'
+        },
+        {
+          model: Exam,
+          as: 'exam'
+        }
+      ],
+      order: [['id', 'ASC']]
+    });
+
+    if (!questions || questions.length === 0) {
+      return res.status(404).json({ message: "لا توجد أسئلة لهذا الامتحان" });
+    }
+
+    res.status(200).json(questions);
+
+  } catch (err) {
+    console.error("❌ Error fetching questions:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 router.post("/submit-text-answer", upload.array("images",5), async (req, res) => {
   try {
     const { userId, examId } = req.body;
