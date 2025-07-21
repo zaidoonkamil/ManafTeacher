@@ -48,7 +48,7 @@ router.get("/exams", async (req, res) => {
 
       return {
         id: exam.id,
-        title: exam.name, // ← أضف هذا السطر
+        title: exam.name,
         createdAt: exam.createdAt,
         questionCounts: counts
       };
@@ -61,7 +61,6 @@ router.get("/exams", async (req, res) => {
     res.status(500).json({ error: "حدث خطأ أثناء جلب الامتحانات" });
   }
 });
-
 
 router.post("/questions", async (req, res) => {
   try {
