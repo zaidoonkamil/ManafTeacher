@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Exam = require('../models/exam');
-const { Question, Choice, ExamAnswer, QuestionAnswer, TextExamAnswer} = require('../models');
+const { Question, Choice, ExamAnswer, QuestionAnswer, TextExamAnswer, Exam} = require('../models');
 const multer = require("multer");
 const upload = multer();
 
@@ -86,21 +86,28 @@ router.get("/questions/:examId", async (req, res) => {
 
     const questions = await Question.findAll({
       where: { examId },
-      include: [{
-        model: Choice,
-        as: 'choices'
-      }],
+      include: [
+        {
+          model: Choice,
+          as: 'choices'
+        },
+        {
+          model: Exam,
+          as: 'exam'
+        }
+      ],
       order: [['createdAt', 'ASC']]
     });
 
     res.status(200).json(questions);
-  }
-  catch (err) {
+
+  } catch (err) {
     console.error("❌ Error fetching questions:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
+//////
 router.post("/submit-exam", async (req, res) => {
   try {
     const { userId, examId, answers } = req.body;

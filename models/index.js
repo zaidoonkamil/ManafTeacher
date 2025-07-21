@@ -6,10 +6,14 @@ const Question = require("./question");
 const Choice = require("./choice");
 const ExamAnswer = require('./examAnswer');
 const QuestionAnswer = require('./questionAnswer');
+const Exam = require('./exam'); 
 
 // علاقات الأجهزة مع المستخدم
 User.hasMany(UserDevice, { foreignKey: 'user_id', as: 'devices', onDelete: 'CASCADE' });
 UserDevice.belongsTo(User, { foreignKey: 'user_id', as: 'user', onDelete: 'CASCADE' });
+
+Question.belongsTo(Exam, { foreignKey: 'examId', as: 'exam' });
+Exam.hasMany(Question, { foreignKey: 'examId', as: 'questions' });
 
 User.belongsToMany(Course, {
   through: UserCourses,
@@ -47,5 +51,6 @@ module.exports = {
   Question,
   ExamAnswer,
   QuestionAnswer,
-  Choice
+  Choice,
+  Exam,
 };
