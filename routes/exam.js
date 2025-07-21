@@ -197,6 +197,7 @@ router.get("/exam/:examId/results", async (req, res) => {
   }
 });
 
+
 router.delete("/questions/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -228,7 +229,7 @@ router.delete("/questions/:id", async (req, res) => {
   }
 });
 
-router.post("/questions/bulk", async (req, res) => {
+router.post("/questions/bulk", upload.none(), async (req, res) => {
   try {
     const { examId, questions } = req.body;
 
@@ -259,8 +260,6 @@ router.post("/questions/bulk", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-
 
 router.post("/submit-text-answer", upload.array("images",5), async (req, res) => {
   try {
