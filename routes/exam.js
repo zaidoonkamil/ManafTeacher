@@ -111,7 +111,13 @@ router.post("/submit-exam", async (req, res) => {
     const { userId, examId, answers } = req.body;
     let score = 0;
 
-    const examAnswer = await ExamAnswer.create({ userId, examId, score: 0 });
+    let examAnswer = await ExamAnswer.findOne({ where: { userId, examId } });
+
+    if (examAnswer) {
+      return res.status(400).json({ error: "لقد قمت بتسليم هذا الامتحان مسبقًا." });
+    } else {
+      examAnswer = await ExamAnswer.create({ userId, examId, score: 0 });
+    }
 
     for (let ans of answers) {
       const question = await Question.findByPk(ans.questionId, {
