@@ -48,7 +48,7 @@ router.get("/exams", async (req, res) => {
 
       return {
         id: exam.id,
-        name: exam.name,
+        title: exam.title,
         createdAt: exam.createdAt,
         questionCounts: counts
       };
