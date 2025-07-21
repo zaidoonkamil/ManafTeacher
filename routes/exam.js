@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Question, Choice, ExamAnswer, QuestionAnswer, TextExamAnswer, Exam} = require('../models');
+const { Question, Choice, ExamAnswer, QuestionAnswer, TextExamAnswer, Exam, User} = require('../models');
 const multer = require("multer");
 const upload = multer();
 
@@ -106,7 +106,6 @@ router.get("/questions/:examId", async (req, res) => {
   }
 });
 
-//////
 router.post("/submit-exam", async (req, res) => {
   try {
     const { userId, examId, answers } = req.body;
@@ -144,6 +143,51 @@ router.post("/submit-exam", async (req, res) => {
   } catch (err) {
     console.error("❌ Error submitting exam:", err);
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.get("/exam/:examId/results", async (req, res) => {
+  const { examId } = req.params;
+
+  try {
+    const totalQuestions = await Question.count({ where: { examId } });
+
+    if (totalQuestions === 0) {
+      return res.status(404).json({ error: "الامتحان لا يحتوي على أسئلة" });
+    }
+
+    const examAnswers = await ExamAnswer.findAll({
+      where: { examId },
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["id", "name"]
+        },
+        {
+          model: QuestionAnswer,
+          as: "questionAnswers",
+          attributes: ["isCorrect"]
+        }
+      ]
+    });
+
+    const results = examAnswers.map(examAnswer => {
+      const correctCount = examAnswer.questionAnswers.filter(qa => qa.isCorrect).length;
+      return {
+        studentId: examAnswer.user.id,
+        studentName: examAnswer.user.name,
+        correctAnswers: correctCount,
+        totalQuestions: totalQuestions,
+        score: `${correctCount}/${totalQuestions}`
+      };
+    });
+
+    res.status(200).json(results);
+
+  } catch (err) {
+    console.error("❌ خطأ أثناء جلب نتائج الامتحان:", err);
+    res.status(500).json({ error: "حدث خطأ في الخادم" });
   }
 });
 

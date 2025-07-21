@@ -15,6 +15,9 @@ UserDevice.belongsTo(User, { foreignKey: 'user_id', as: 'user', onDelete: 'CASCA
 Question.belongsTo(Exam, { foreignKey: 'examId', as: 'exam' });
 Exam.hasMany(Question, { foreignKey: 'examId', as: 'questions' });
 
+ExamAnswer.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+User.hasMany(ExamAnswer, { foreignKey: 'userId', as: 'examAnswers' });
+
 User.belongsToMany(Course, {
   through: UserCourses,
   foreignKey: 'userId',
