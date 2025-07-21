@@ -44,8 +44,10 @@ router.post("/questions", async (req, res) => {
   try {
     const { examId, questions } = req.body;
 
-    if (!Array.isArray(questions)) {
-      return res.status(400).json({ error: "الأسئلة يجب أن تكون في مصفوفة" });
+    // تحقق من وجود الامتحان
+    const exam = await Exam.findByPk(examId);
+    if (!exam) {
+      return res.status(400).json({ error: "الامتحان غير موجود. تأكد من examId" });
     }
 
     const createdQuestions = [];
