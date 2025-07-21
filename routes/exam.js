@@ -3,6 +3,7 @@ const router = express.Router();
 const { Question, Choice, ExamAnswer, QuestionAnswer, TextExamAnswer, Exam, User} = require('../models');
 const multer = require("multer");
 const upload = multer();
+const { Op } = require("sequelize");
 
 router.post("/exams", upload.none(), async (req, res) => {
   try {
@@ -28,16 +29,38 @@ router.post("/exams", upload.none(), async (req, res) => {
 router.get("/exams", async (req, res) => {
   try {
     const exams = await Exam.findAll({
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
+      include: [
+        {
+          model: Question,
+          attributes: ['id', 'type'],
+          as: 'questions'
+        }
+      ]
     });
 
-    res.status(200).json(exams);
+    const result = exams.map(exam => {
+      const questions = exam.questions || [];
+      const counts = {
+        text: questions.filter(q => q.type === 'text').length,
+        multiple_choice: questions.filter(q => q.type === 'multiple_choice').length
+      };
+
+      return {
+        id: exam.id,
+        name: exam.name,
+        createdAt: exam.createdAt,
+        questionCounts: counts
+      };
+    });
+
+    res.status(200).json(result);
+
   } catch (err) {
     console.error("❌ Error fetching exams:", err);
     res.status(500).json({ error: "حدث خطأ أثناء جلب الامتحانات" });
   }
-}
-);
+});
 
 router.post("/questions", async (req, res) => {
   try {
