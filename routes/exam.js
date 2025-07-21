@@ -261,7 +261,7 @@ router.post("/questions/bulk", upload.none(), async (req, res) => {
   }
 });
 
-router.get("/questions/:examId", async (req, res) => {
+router.get("/questionsBulk/:examId", async (req, res) => {
   try {
     const { examId } = req.params;
 
