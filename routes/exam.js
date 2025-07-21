@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const Exam = require('../models/exam');
 const { Question, Choice, ExamAnswer, QuestionAnswer, TextExamAnswer, Exam} = require('../models');
 const multer = require("multer");
 const upload = multer();
