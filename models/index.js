@@ -7,6 +7,7 @@ const Choice = require("./choice");
 const ExamAnswer = require('./examAnswer');
 const QuestionAnswer = require('./questionAnswer');
 const Exam = require('./exam'); 
+const TextExamAnswer = require("./TextExamAnswer");
 
 // علاقات الأجهزة مع المستخدم
 User.hasMany(UserDevice, { foreignKey: 'user_id', as: 'devices', onDelete: 'CASCADE' });
@@ -56,4 +57,5 @@ module.exports = {
   QuestionAnswer,
   Choice,
   Exam,
+  TextExamAnswer,
 };
