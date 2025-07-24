@@ -112,7 +112,6 @@ router.delete("/exam/:id", async (req, res) => {
   }
 });
 
-
 router.post("/questions", async (req, res) => {
   try {
     const { examId, questions } = req.body;
@@ -182,7 +181,6 @@ router.get("/questions/:examId", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 router.post("/submit-exam", async (req, res) => {
   try {
@@ -274,7 +272,6 @@ router.get("/exam/:examId/results", async (req, res) => {
     res.status(500).json({ error: "حدث خطأ في الخادم" });
   }
 });
-
 
 router.delete("/questions/:id", async (req, res) => {
   const { id } = req.params;
@@ -376,8 +373,11 @@ router.post("/submit-text-answer", upload.array("images",5), async (req, res) =>
       return res.status(400).json({ error: "userId و examId والملف مطلوبة" });
     }
 
-    const images = req.files.map(file => file.filename);
-        
+    const images = req.files
+     .filter(file => !!file && !!file.filename)
+     .map(file => file.filename);
+
+
     const existing = await TextExamAnswer.findOne({ where: { userId, examId } });
     if (existing) {
       return res.status(400).json({ error: "لقد قمت برفع الإجابة مسبقًا لهذا الامتحان" });
@@ -416,7 +416,8 @@ router.get("/text-answers/:examId", async (req, res) => {
           as: 'user', 
           attributes: ['id', 'name']
         }
-      ]
+      ],
+      order: [['createdAt', 'DESC']]
     });
 
     if (!answers || answers.length === 0) {
