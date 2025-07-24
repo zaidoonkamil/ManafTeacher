@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { Question, Choice, ExamAnswer, QuestionAnswer, TextExamAnswer, Exam, User} = require('../models');
 const multer = require("multer");
-const upload = multer();
+const upload = require("../middlewares/uploads");
 const { Op } = require("sequelize");
 
 
