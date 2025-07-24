@@ -160,7 +160,7 @@ router.get("/questions/:examId", async (req, res) => {
     const questions = await Question.findAll({
       where: {
         examId,
-        type: 'multiple_choice'
+        type: 'text'
       },
       include: [
         {
