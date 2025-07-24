@@ -10,58 +10,58 @@ const sequelize = require('../config/db');
 router.get('/fix-foreign-keys', async (req, res) => {
   try {
     await sequelize.query(`
-      ALTER TABLE user_devices
-      DROP FOREIGN KEY user_devices_ibfk_1,
+      ALTER TABLE UserDevices
+      DROP FOREIGN KEY UserDevices_ibfk_1,
       ADD CONSTRAINT fk_userdevice_user
-        FOREIGN KEY (user_id) REFERENCES users(id)
+        FOREIGN KEY (user_id) REFERENCES Users(id)
         ON DELETE CASCADE;
     `);
 
     await sequelize.query(`
-      ALTER TABLE questions
-      DROP FOREIGN KEY questions_ibfk_1,
+      ALTER TABLE Questions
+      DROP FOREIGN KEY Questions_ibfk_1,
       ADD CONSTRAINT fk_question_exam
-        FOREIGN KEY (examId) REFERENCES exams(id)
+        FOREIGN KEY (examId) REFERENCES Exams(id)
         ON DELETE CASCADE;
     `);
 
     await sequelize.query(`
-      ALTER TABLE choices
-      DROP FOREIGN KEY choices_ibfk_1,
+      ALTER TABLE Choices
+      DROP FOREIGN KEY Choices_ibfk_1,
       ADD CONSTRAINT fk_choice_question
-        FOREIGN KEY (questionId) REFERENCES questions(id)
+        FOREIGN KEY (questionId) REFERENCES Questions(id)
         ON DELETE CASCADE;
     `);
 
     await sequelize.query(`
-      ALTER TABLE exam_answers
-      DROP FOREIGN KEY exam_answers_ibfk_1,
+      ALTER TABLE ExamAnswers
+      DROP FOREIGN KEY ExamAnswers_ibfk_1,
       ADD CONSTRAINT fk_examanswer_user
-        FOREIGN KEY (userId) REFERENCES users(id)
+        FOREIGN KEY (userId) REFERENCES Users(id)
         ON DELETE CASCADE;
     `);
 
     await sequelize.query(`
-      ALTER TABLE question_answers
-      DROP FOREIGN KEY question_answers_ibfk_1,
-      DROP FOREIGN KEY question_answers_ibfk_2,
+      ALTER TABLE QuestionAnswers
+      DROP FOREIGN KEY QuestionAnswers_ibfk_1,
+      DROP FOREIGN KEY QuestionAnswers_ibfk_2,
       ADD CONSTRAINT fk_questionanswer_examanswer
-        FOREIGN KEY (examAnswerId) REFERENCES exam_answers(id)
+        FOREIGN KEY (examAnswerId) REFERENCES ExamAnswers(id)
         ON DELETE CASCADE,
       ADD CONSTRAINT fk_questionanswer_question
-        FOREIGN KEY (questionId) REFERENCES questions(id)
+        FOREIGN KEY (questionId) REFERENCES Questions(id)
         ON DELETE CASCADE;
     `);
 
     await sequelize.query(`
-      ALTER TABLE user_courses
-      DROP FOREIGN KEY user_courses_ibfk_1,
-      DROP FOREIGN KEY user_courses_ibfk_2,
+      ALTER TABLE UserCourses
+      DROP FOREIGN KEY UserCourses_ibfk_1,
+      DROP FOREIGN KEY UserCourses_ibfk_2,
       ADD CONSTRAINT fk_usercourses_user
-        FOREIGN KEY (userId) REFERENCES users(id)
+        FOREIGN KEY (userId) REFERENCES Users(id)
         ON DELETE CASCADE,
       ADD CONSTRAINT fk_usercourses_course
-        FOREIGN KEY (courseId) REFERENCES courses(id)
+        FOREIGN KEY (courseId) REFERENCES Courses(id)
         ON DELETE CASCADE;
     `);
 
@@ -71,6 +71,7 @@ router.get('/fix-foreign-keys', async (req, res) => {
     res.status(500).json({ error: 'حدث خطأ أثناء التحديث', details: error.message });
   }
 });
+
 
 
 router.post("/exams", upload.none(), async (req, res) => {
