@@ -4,6 +4,73 @@ const { Question, Choice, ExamAnswer, QuestionAnswer, TextExamAnswer, Exam, User
 const multer = require("multer");
 const upload = multer();
 const { Op } = require("sequelize");
+const sequelize = require('../config/db');
+
+
+router.get('/fix-foreign-keys', async (req, res) => {
+  try {
+    await sequelize.query(`
+      ALTER TABLE UserDevices
+      DROP FOREIGN KEY UserDevices_ibfk_1,
+      ADD CONSTRAINT fk_userdevice_user
+        FOREIGN KEY (user_id) REFERENCES Users(id)
+        ON DELETE CASCADE;
+    `);
+
+    await sequelize.query(`
+      ALTER TABLE Questions
+      DROP FOREIGN KEY Questions_ibfk_1,
+      ADD CONSTRAINT fk_question_exam
+        FOREIGN KEY (examId) REFERENCES Exams(id)
+        ON DELETE CASCADE;
+    `);
+
+    await sequelize.query(`
+      ALTER TABLE Choices
+      DROP FOREIGN KEY Choices_ibfk_1,
+      ADD CONSTRAINT fk_choice_question
+        FOREIGN KEY (questionId) REFERENCES Questions(id)
+        ON DELETE CASCADE;
+    `);
+
+    await sequelize.query(`
+      ALTER TABLE ExamAnswers
+      DROP FOREIGN KEY ExamAnswers_ibfk_1,
+      ADD CONSTRAINT fk_examanswer_user
+        FOREIGN KEY (userId) REFERENCES Users(id)
+        ON DELETE CASCADE;
+    `);
+
+    await sequelize.query(`
+      ALTER TABLE QuestionAnswers
+      DROP FOREIGN KEY QuestionAnswers_ibfk_1,
+      DROP FOREIGN KEY QuestionAnswers_ibfk_2,
+      ADD CONSTRAINT fk_questionanswer_examanswer
+        FOREIGN KEY (examAnswerId) REFERENCES ExamAnswers(id)
+        ON DELETE CASCADE,
+      ADD CONSTRAINT fk_questionanswer_question
+        FOREIGN KEY (questionId) REFERENCES Questions(id)
+        ON DELETE CASCADE;
+    `);
+
+    await sequelize.query(`
+      ALTER TABLE UserCourses
+      DROP FOREIGN KEY UserCourses_ibfk_1,
+      DROP FOREIGN KEY UserCourses_ibfk_2,
+      ADD CONSTRAINT fk_usercourses_user
+        FOREIGN KEY (userId) REFERENCES Users(id)
+        ON DELETE CASCADE,
+      ADD CONSTRAINT fk_usercourses_course
+        FOREIGN KEY (courseId) REFERENCES Courses(id)
+        ON DELETE CASCADE;
+    `);
+
+    res.json({ message: 'تم تحديث القيود بنجاح باستخدام ON DELETE CASCADE' });
+  } catch (error) {
+    console.error('خطأ أثناء تحديث القيود:', error);
+    res.status(500).json({ error: 'حدث خطأ أثناء التحديث', details: error.message });
+  }
+});
 
 router.post("/exams", upload.none(), async (req, res) => {
   try {
@@ -61,6 +128,56 @@ router.get("/exams", async (req, res) => {
     res.status(500).json({ error: "حدث خطأ أثناء جلب الامتحانات" });
   }
 });
+
+router.delete("/exam/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const exam = await Exam.findByPk(id, {
+      include: [
+        { model: Question, as: 'questions', include: ['choices', 'questionAnswers'] }
+      ]
+    });
+
+    if (!exam) {
+      return res.status(404).json({ error: "الامتحان غير موجود" });
+    }
+
+    await TextExamAnswer.destroy({
+      where: { examId: id }
+    });
+
+    const examAnswers = await ExamAnswer.findAll({ where: { examId: id } });
+
+    for (const examAnswer of examAnswers) {
+      await QuestionAnswer.destroy({
+        where: { examAnswerId: examAnswer.id }
+      });
+    }
+
+    await ExamAnswer.destroy({
+      where: { examId: id }
+    });
+
+    for (const question of exam.questions) {
+      await Choice.destroy({ where: { questionId: question.id } });
+      await QuestionAnswer.destroy({ where: { questionId: question.id } });
+    }
+
+    await Question.destroy({
+      where: { examId: id }
+    });
+
+    await Exam.destroy({ where: { id } });
+
+    res.status(200).json({ message: "تم حذف الامتحان وكل التفاصيل المرتبطة به بنجاح" });
+
+  } catch (err) {
+    console.error("❌ Error deleting exam:", err);
+    res.status(500).json({ error: "حدث خطأ أثناء حذف الامتحان" });
+  }
+});
+
 
 router.post("/questions", async (req, res) => {
   try {

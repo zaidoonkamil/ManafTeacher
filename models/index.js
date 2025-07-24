@@ -13,11 +13,11 @@ const TextExamAnswer = require("./TextExamAnswer");
 User.hasMany(UserDevice, { foreignKey: 'user_id', as: 'devices', onDelete: 'CASCADE' });
 UserDevice.belongsTo(User, { foreignKey: 'user_id', as: 'user', onDelete: 'CASCADE' });
 
-Question.belongsTo(Exam, { foreignKey: 'examId', as: 'exam' });
-Exam.hasMany(Question, { foreignKey: 'examId', as: 'questions' });
+Question.belongsTo(Exam, { foreignKey: 'examId', as: 'exam', onDelete: 'CASCADE' });
+Exam.hasMany(Question, { foreignKey: 'examId', as: 'questions', onDelete: 'CASCADE' });
 
-ExamAnswer.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-User.hasMany(ExamAnswer, { foreignKey: 'userId', as: 'examAnswers' });
+User.hasMany(ExamAnswer, { foreignKey: 'userId', as: 'examAnswers', onDelete: 'CASCADE' });
+ExamAnswer.belongsTo(User, { foreignKey: 'userId', as: 'user', onDelete: 'CASCADE' });
 
 User.belongsToMany(Course, {
   through: UserCourses,
@@ -37,15 +37,16 @@ Course.belongsToMany(User, {
 
 // سؤال يحتوي على عدة اختيارات
 Question.hasMany(Choice, { foreignKey: 'questionId', as: 'choices', onDelete: 'CASCADE' });
-Choice.belongsTo(Question, { foreignKey: 'questionId', as: 'question' });
+Choice.belongsTo(Question, { foreignKey: 'questionId', as: 'question', onDelete: 'CASCADE' });
 
 // إجابة امتحان تحتوي على إجابات لأسئلة متعددة
-ExamAnswer.hasMany(QuestionAnswer, { foreignKey: 'examAnswerId', as: 'questionAnswers' });
-QuestionAnswer.belongsTo(ExamAnswer, { foreignKey: 'examAnswerId', as: 'examAnswer' });
+ExamAnswer.hasMany(QuestionAnswer, { foreignKey: 'examAnswerId', as: 'questionAnswers', onDelete: 'CASCADE' });
+QuestionAnswer.belongsTo(ExamAnswer, { foreignKey: 'examAnswerId', as: 'examAnswer', onDelete: 'CASCADE' });
 
 // العلاقة بين السؤال والإجابات الفردية عليه
 Question.hasMany(QuestionAnswer, { foreignKey: 'questionId', as: 'questionAnswers', onDelete: 'CASCADE' });
-QuestionAnswer.belongsTo(Question, { foreignKey: 'questionId', as: 'question' });
+QuestionAnswer.belongsTo(Question, { foreignKey: 'questionId', as: 'question', onDelete: 'CASCADE' });
+
 
 module.exports = {
   User,
