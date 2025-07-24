@@ -19,21 +19,11 @@ Exam.hasMany(Question, { foreignKey: 'examId', as: 'questions', onDelete: 'CASCA
 User.hasMany(ExamAnswer, { foreignKey: 'userId', as: 'examAnswers', onDelete: 'CASCADE' });
 ExamAnswer.belongsTo(User, { foreignKey: 'userId', as: 'user', onDelete: 'CASCADE' });
 
-User.belongsToMany(Course, {
-  through: UserCourses,
-  foreignKey: 'userId',
-  otherKey: 'courseId',
-  as: 'courses',
-  onDelete: 'CASCADE'
-});
+TextExamAnswer.belongsTo(User, { foreignKey: 'userId', as: 'user', onDelete: 'CASCADE' });
+User.hasMany(TextExamAnswer, { foreignKey: 'userId', as: 'textExamAnswers', onDelete: 'CASCADE' });
 
-Course.belongsToMany(User, {
-  through: UserCourses,
-  foreignKey: 'courseId',
-  otherKey: 'userId',
-  as: 'users',
-  onDelete: 'CASCADE'
-})
+User.belongsToMany(Course, {through: UserCourses,foreignKey: 'userId',otherKey: 'courseId',as: 'courses',onDelete: 'CASCADE'});
+Course.belongsToMany(User, {through: UserCourses,foreignKey: 'courseId',otherKey: 'userId',as: 'users',onDelete: 'CASCADE'})
 
 // سؤال يحتوي على عدة اختيارات
 Question.hasMany(Choice, { foreignKey: 'questionId', as: 'choices', onDelete: 'CASCADE' });

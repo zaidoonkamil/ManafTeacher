@@ -400,7 +400,6 @@ router.post("/submit-text-answer", upload.array("images",5), async (req, res) =>
   }
 });
 
-
 router.get("/text-answers/:examId", async (req, res) => {
   try {
     const { examId } = req.params;
@@ -411,7 +410,13 @@ router.get("/text-answers/:examId", async (req, res) => {
 
     const answers = await TextExamAnswer.findAll({
       where: { examId },
-      include: [{ model: User, as: 'user', attributes: ['id', 'name'] }]
+      include: [
+        {
+          model: User,
+          as: 'user', 
+          attributes: ['id', 'name']
+        }
+      ]
     });
 
     if (!answers || answers.length === 0) {
@@ -421,9 +426,13 @@ router.get("/text-answers/:examId", async (req, res) => {
     res.status(200).json(answers);
 
   } catch (err) {
-    console.error("❌ Error fetching text answers:", err);
-    res.status(500).json({ error: "حدث خطأ في السيرفر" });
+    console.error("❌ Error fetching text answers:", err.message); 
+    res.status(500).json({
+      error: "حدث خطأ في السيرفر",
+      details: err.message
+    });
   }
 });
+
 
 module.exports = router;
