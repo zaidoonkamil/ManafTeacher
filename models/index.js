@@ -8,10 +8,13 @@ const ExamAnswer = require('./examAnswer');
 const QuestionAnswer = require('./questionAnswer');
 const Exam = require('./exam'); 
 const TextExamAnswer = require("./TextExamAnswer");
+const Grade = require("./grade");
 
-// علاقات الأجهزة مع المستخدم
 User.hasMany(UserDevice, { foreignKey: 'user_id', as: 'devices', onDelete: 'CASCADE' });
 UserDevice.belongsTo(User, { foreignKey: 'user_id', as: 'user', onDelete: 'CASCADE' });
+
+User.hasOne(Grade, { foreignKey: 'userId', as: 'grade', onDelete: 'CASCADE' });
+Grade.belongsTo(User, { foreignKey: 'userId', as: 'user', onDelete: 'CASCADE' });
 
 Question.belongsTo(Exam, { foreignKey: 'examId', as: 'exam', onDelete: 'CASCADE' });
 Exam.hasMany(Question, { foreignKey: 'examId', as: 'questions', onDelete: 'CASCADE' });
@@ -49,4 +52,5 @@ module.exports = {
   Choice,
   Exam,
   TextExamAnswer,
+  Grade,
 };

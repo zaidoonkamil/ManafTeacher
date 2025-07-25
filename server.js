@@ -7,6 +7,7 @@ const courseRoutes = require("./routes/course");
 const lessonRoutes = require("./routes/lesson");
 const notifications = require("./routes/notifications.js");
 const examRoutes = require('./routes/exam');
+const gradesRoutes = require('./routes/grades');
 
 
 const app = express();
@@ -25,6 +26,7 @@ app.use("/", courseRoutes);
 app.use("/", lessonRoutes);
 app.use("/", notifications);
 app.use("/", examRoutes);
+app.use("/", gradesRoutes);
 
 const PORT = 8000;
 
