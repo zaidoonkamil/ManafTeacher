@@ -1,5 +1,5 @@
 const express = require('express');
-const User = require('../models/user');
+const { User, Grade } = require('../models');
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const router = express.Router();
@@ -30,35 +30,48 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
-router.post("/users", upload.none() ,async (req, res) => {
-    const { name, phone , password , role = 'user'} = req.body;
-    
-    try {
-        const existingUser = await User.findOne({ where: { phone } });
+router.post("/users", upload.none(), async (req, res) => {
+  const { name, phone, password, role = 'user' } = req.body;
 
-        if (existingUser) {
-            return res.status(400).json({ error: "الهاتف قيد الاستخدام بالفعل" });
-        }
+  try {
+    const existingUser = await User.findOne({ where: { phone } });
 
-        if (phone.length !== 11) {
-            return res.status(400).json({ error: "يجب أن يتكون رقم الهاتف من 11 رقمًا" });
-        }
-    
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-        const user = await User.create({ name, phone, password: hashedPassword, role });
-
-        res.status(201).json({
-        id: user.id,
-        name: user.name,
-        phone: user.phone,
-        role: role,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
-     });
-    } catch (err) {
-        console.error("❌ Error creating user:", err);
-        res.status(500).json({ error: "Internal Server Error" });
+    if (existingUser) {
+      return res.status(400).json({ error: "الهاتف قيد الاستخدام بالفعل" });
     }
+
+    if (phone.length !== 11) {
+      return res.status(400).json({ error: "يجب أن يتكون رقم الهاتف من 11 رقمًا" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const user = await User.create({ name, phone, password: hashedPassword, role });
+
+    await Grade.create({
+      userId: user.id,
+      unit1: 0,
+      unit2: 0,
+      unit3: 0,
+      unit4: 0,
+      unit5: 0,
+      unit6: 0,
+      unit7: 0,
+      unit8: 0
+    });
+
+    res.status(201).json({
+      id: user.id,
+      name: user.name,
+      phone: user.phone,
+      role: role,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    });
+
+  } catch (err) {
+    console.error("❌ Error creating user:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 router.post("/login", upload.none() ,async (req, res) => {

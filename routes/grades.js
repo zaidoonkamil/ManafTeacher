@@ -111,5 +111,33 @@ router.get('/grades/:id', async (req, res) => {
   }
 });
 
+router.put('/grades/reset', async (req, res) => {
+  try {
+    const grades = await Grade.findAll();
+
+    if (!grades.length) {
+      return res.status(404).json({ message: "لا توجد سجلات درجات لتحديثها" });
+    }
+
+    for (const grade of grades) {
+      grade.unit1 = 0;
+      grade.unit2 = 0;
+      grade.unit3 = 0;
+      grade.unit4 = 0;
+      grade.unit5 = 0;
+      grade.unit6 = 0;
+      grade.unit7 = 0;
+      grade.unit8 = 0;
+      await grade.save();
+    }
+
+    res.status(200).json({ message: "✅ تم تصفير درجات جميع المستخدمين بنجاح" });
+
+  } catch (error) {
+    console.error("❌ خطأ في تصفير الدرجات:", error);
+    res.status(500).json({ error: "حدث خطأ أثناء تصفير الدرجات" });
+  }
+});
+
 
 module.exports = router;
