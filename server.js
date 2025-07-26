@@ -9,6 +9,11 @@ const lessonRoutes = require("./routes/lesson");
 const notifications = require("./routes/notifications.js");
 const examRoutes = require('./routes/exam');
 const gradesRoutes = require('./routes/grades');
+const { TextExamAnswer } = require('./models');
+
+TextExamAnswer.findAll({
+  include: [{ association: 'user', attributes: ['id', 'name'] }]
+}).then(res => console.log("✅ العلاقات تعمل")).catch(err => console.log("❌ فشل", err.message));
 
 
 const app = express();
