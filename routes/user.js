@@ -8,6 +8,8 @@ const dotenv = require('dotenv');
 dotenv.config();
 const multer = require("multer");
 const upload = multer();
+const { Op } = require('sequelize');
+
 
 const generateToken = (user) => {
     return jwt.sign(
@@ -117,6 +119,20 @@ router.get("/users", async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Error fetching users:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.get("/all-users", async (req, res) => {
+  try {
+    const users = await User.findAll({
+      where: { role: { [Op.ne]: 'admin' } },
+      attributes: ['name'],
+      order: [['createdAt', 'DESC']]
+    });
+    res.status(200).json(users);
+  } catch (err) {
+    console.error("❌ Error fetching all users:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
