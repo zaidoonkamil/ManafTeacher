@@ -111,33 +111,47 @@ router.get('/grades/:id', async (req, res) => {
   }
 });
 
-router.put('/grades/reset', async (req, res) => {
+router.post('/grades/reset-null', async (req, res) => {
   try {
-    const grades = await Grade.findAll();
+    const users = await User.findAll({
+      include: [
+        {
+          model: Grade,
+          as: 'grade',
+        }
+      ]
+    });
 
-    if (!grades.length) {
-      return res.status(404).json({ message: "لا توجد سجلات درجات لتحديثها" });
+    const created = [];
+
+    for (const user of users) {
+      if (!user.grade) {
+        const newGrade = await Grade.create({
+          userId: user.id,
+          unit1: 0,
+          unit2: 0,
+          unit3: 0,
+          unit4: 0,
+          unit5: 0,
+          unit6: 0,
+          unit7: 0,
+          unit8: 0,
+        });
+        created.push({ userId: user.id, status: "✅ تمت إضافة سجل جديد بالدرجات", grade: newGrade });
+      }
     }
 
-    for (const grade of grades) {
-      grade.unit1 = 0;
-      grade.unit2 = 0;
-      grade.unit3 = 0;
-      grade.unit4 = 0;
-      grade.unit5 = 0;
-      grade.unit6 = 0;
-      grade.unit7 = 0;
-      grade.unit8 = 0;
-      await grade.save();
-    }
-
-    res.status(200).json({ message: "✅ تم تصفير درجات جميع المستخدمين بنجاح" });
+    return res.status(200).json({
+      message: "تمت إضافة سجلات درجات بقيمة 0 لجميع الطلاب الذين لم يكن لديهم سجل",
+      results: created,
+    });
 
   } catch (error) {
-    console.error("❌ خطأ في تصفير الدرجات:", error);
-    res.status(500).json({ error: "حدث خطأ أثناء تصفير الدرجات" });
+    console.error("❌ خطأ في إنشاء الدرجات:", error);
+    res.status(500).json({ error: "حدث خطأ أثناء إنشاء الدرجات" });
   }
 });
+
 
 
 module.exports = router;
