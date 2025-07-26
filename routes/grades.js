@@ -66,7 +66,7 @@ router.post('/grades', upload.none(), async (req, res) => {
 router.get('/grades', async (req, res) => {
   try {
     const studentsWithGrades = await User.findAll({
-      attributes: ['id', 'name'],
+      attributes: ['id', 'name', 'phone'],
       include: [
         {
           model: Grade,
@@ -110,48 +110,6 @@ router.get('/grades/:id', async (req, res) => {
     res.status(500).json({ error: 'حدث خطأ أثناء جلب درجات الطالب' });
   }
 });
-
-router.post('/grades/reset-null', async (req, res) => {
-  try {
-    const users = await User.findAll({
-      include: [
-        {
-          model: Grade,
-          as: 'grade',
-        }
-      ]
-    });
-
-    const created = [];
-
-    for (const user of users) {
-      if (!user.grade) {
-        const newGrade = await Grade.create({
-          userId: user.id,
-          unit1: 0,
-          unit2: 0,
-          unit3: 0,
-          unit4: 0,
-          unit5: 0,
-          unit6: 0,
-          unit7: 0,
-          unit8: 0,
-        });
-        created.push({ userId: user.id, status: "✅ تمت إضافة سجل جديد بالدرجات", grade: newGrade });
-      }
-    }
-
-    return res.status(200).json({
-      message: "تمت إضافة سجلات درجات بقيمة 0 لجميع الطلاب الذين لم يكن لديهم سجل",
-      results: created,
-    });
-
-  } catch (error) {
-    console.error("❌ خطأ في إنشاء الدرجات:", error);
-    res.status(500).json({ error: "حدث خطأ أثناء إنشاء الدرجات" });
-  }
-});
-
 
 
 module.exports = router;
