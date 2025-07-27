@@ -3,6 +3,7 @@ const router = express.Router();
 const { User, Grade } = require('../models');
 const multer = require("multer");
 const upload = multer();
+const { sendNotificationToUser } = require('../services/notifications');
 
 router.post('/grades', upload.none(), async (req, res) => {
   try {
@@ -36,6 +37,13 @@ router.post('/grades', upload.none(), async (req, res) => {
         grade.unit8 = (unit5 !== undefined && unit8 !== "") ? unit8 : grade.unit8;
         await grade.save();
         results.push({ userId, status: "تم التحديث", grade });
+        
+        try {
+          await sendNotificationToUser(userId, `تم تحديث درجاتك`, "تحديث الدرجات");
+          console.log(`✅ تم إرسال إشعار للمستخدم ${userId}`);
+        } catch (notifyErr) {
+          console.error(`❌ فشل في إرسال إشعار للمستخدم ${userId}:`, notifyErr);
+        }
       } else {
         const newGrade = await Grade.create({
           userId,

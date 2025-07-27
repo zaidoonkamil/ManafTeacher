@@ -4,6 +4,7 @@ const { Question, Choice, ExamAnswer, QuestionAnswer, TextExamAnswer, Exam, User
 const multer = require("multer");
 const upload = require("../middlewares/uploads");
 const { Op } = require("sequelize");
+const { sendNotification } = require('../services/notifications');
 
 
 router.post("/exams", upload.none(), async (req, res) => {
@@ -15,6 +16,13 @@ router.post("/exams", upload.none(), async (req, res) => {
     }
 
     const exam = await Exam.create({ title });
+    
+    try {
+      await sendNotification(`تمت إضافة امتحان جديد`, "امتحان جديد");
+      console.log("✅ تم إرسال إشعار عن الامتحان الجديد");
+    } catch (notifyErr) {
+      console.error("❌ فشل في إرسال إشعار الامتحان:", notifyErr);
+    }
 
     res.status(201).json({
       message: "تم إنشاء الامتحان بنجاح",
