@@ -27,6 +27,7 @@ router.post("/register-device", async (req, res) => {
         } else {
             await UserDevice.create({ user_id, player_id });
         }
+        console.log("🔔 Sending to playerId:", player_id);
 
         res.json({ success: true, message: "تم تسجيل الجهاز بنجاح" });
     } catch (error) {
