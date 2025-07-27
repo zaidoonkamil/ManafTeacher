@@ -4,6 +4,7 @@ const { User, Grade } = require('../models');
 const multer = require("multer");
 const upload = multer();
 const { sendNotificationToUser } = require('../services/notifications');
+const { Op } = require('sequelize');
 
 router.post('/grades', upload.none(), async (req, res) => {
   try {
@@ -75,6 +76,7 @@ router.get('/grades', async (req, res) => {
   try {
     const studentsWithGrades = await User.findAll({
       attributes: ['id', 'name', 'phone'],
+      where: { role: { [Op.ne]: 'admin' } },
       include: [
         {
           model: Grade,

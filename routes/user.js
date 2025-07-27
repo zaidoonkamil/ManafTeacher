@@ -117,6 +117,7 @@ router.get("/users", async (req, res) => {
 
     const { count, rows: users } = await User.findAndCountAll({
       attributes: { exclude: ['password'] },
+      where: { role: { [Op.ne]: 'admin' } },
       limit,
       offset,
       order: [['createdAt', 'DESC']]
