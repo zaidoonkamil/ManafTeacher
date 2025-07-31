@@ -1,5 +1,5 @@
 const express = require('express');
-const { User, Grade } = require('../models');
+const { User, Grade ,UserDevice,} = require('../models');
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const router = express.Router();
@@ -9,6 +9,38 @@ dotenv.config();
 const multer = require("multer");
 const upload = multer();
 const { Op } = require('sequelize');
+const sequelize = require('../config/db');
+
+
+router.put('/users/devices/reset', async (req, res) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    const users = await User.findAll();
+
+    for (const user of users) {
+      // حذف جميع الأجهزة المرتبطة بالمستخدم
+      await UserDevice.destroy({
+        where: { user_id: user.id },
+        transaction,
+      });
+
+      // إنشاء جهاز افتراضي لكل مستخدم (يمكنك تعديله حسب الحاجة)
+      await UserDevice.create({
+        user_id: user.id,
+        player_id: `dummy-${user.id}-${Date.now()}`, // معرف عشوائي
+      }, { transaction });
+    }
+
+    await transaction.commit();
+    res.json({ message: 'تم تحديث علاقات الأجهزة لجميع المستخدمين بنجاح ✅' });
+
+  } catch (error) {
+    await transaction.rollback();
+    console.error('❌ حدث خطأ أثناء التحديث:', error);
+    res.status(500).json({ message: 'حدث خطأ أثناء تحديث الأجهزة', error: error.message });
+  }
+});
 
 
 const generateToken = (user) => {

@@ -23,7 +23,4 @@ const UserDevice = sequelize.define("UserDevice", {
 });
 
 
-UserDevice.belongsTo(User, { foreignKey: "user_id" });
-User.hasMany(UserDevice, { foreignKey: "user_id" });
-
 module.exports = UserDevice;
