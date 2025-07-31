@@ -39,12 +39,12 @@ router.post('/grades', upload.none(), async (req, res) => {
         await grade.save();
         results.push({ userId, status: "تم التحديث", grade });
         
-        try {
+      /*  try {
           await sendNotificationToUser(userId, `تم تحديث درجاتك`, "تحديث الدرجات");
           console.log(`✅ تم إرسال إشعار للمستخدم ${userId}`);
         } catch (notifyErr) {
           console.error(`❌ فشل في إرسال إشعار للمستخدم ${userId}:`, notifyErr);
-        }
+        }*/
       } else {
         const newGrade = await Grade.create({
           userId,
