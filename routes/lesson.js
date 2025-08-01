@@ -3,6 +3,28 @@ const router = express.Router();
 const Lesson = require('../models/lesson');
 const upload = require("../middlewares/uploads");
 
+router.patch("/lessons/update-lock-field", async (req, res) => {
+  try {
+    const [updatedCount] = await Lesson.update(
+      { isLocked: false },
+      {
+        where: {
+          isLocked: null
+        }
+      }
+    );
+
+    res.status(200).json({
+      message: `✅ تم تحديث ${updatedCount} درس وإضافة حقل isLocked = false.`,
+    });
+  } catch (err) {
+    console.error("❌ خطأ أثناء تحديث الدروس:", err);
+    res.status(500).json({
+      message: "❌ حدث خطأ أثناء تحديث الدروس",
+      error: err.message,
+    });
+  }
+});
 
 router.post("/lessons", upload.array("images", 5), async (req, res) => {
   try {
@@ -63,5 +85,24 @@ router.delete("/lessons/:id", async (req, res) => {
   }
 });
 
+router.patch("/lessons/:id/lock", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isLocked } = req.body;
+
+    const lesson = await Lesson.findByPk(id);
+    if (!lesson) {
+      return res.status(404).json({ error: "الدرس غير موجود" });
+    }
+
+    lesson.isLocked = isLocked; 
+    await lesson.save();
+
+    res.status(200).json({ message: `تم ${isLocked ? "قفل" : "فتح"} الدرس بنجاح`, lesson });
+  } catch (err) {
+    console.error("❌ Error updating lesson lock:", err);
+    res.status(500).json({ error: "خطأ في الخادم الداخلي" });
+  }
+});
 
 module.exports = router;
