@@ -1,5 +1,5 @@
 const express = require('express');
-const { User, Grade,} = require('../models');
+const { User, Grade, Unit} = require('../models');
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 const router = express.Router();
@@ -10,6 +10,56 @@ const multer = require("multer");
 const upload = multer();
 const { Op } = require('sequelize');
 
+
+router.post("/users", upload.none(), async (req, res) => {
+  const { name, phone, password, role = 'user' } = req.body;
+
+  try {
+    const existingUser = await User.findOne({ where: { phone } });
+
+    if (existingUser) {
+      return res.status(400).json({ error: "الهاتف قيد الاستخدام بالفعل" });
+    }
+
+    if (phone.length !== 11) {
+      return res.status(400).json({ error: "يجب أن يتكون رقم الهاتف من 11 رقمًا" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const user = await User.create({ name, phone, password: hashedPassword, role });
+
+    const existingUnit = await Grade.findOne({
+      attributes: ['unitName'],
+      order: [['createdAt', 'ASC']],
+    });
+
+    const unitName = existingUnit ? existingUnit.unitName : "Unit One";
+
+    await Grade.create({
+      userId: user.id,
+      unitName: unitName,
+      lectureNos: [1, 2, 3, 4, 5],
+      examGrades: [0, 0, 0, 0, 0],
+      originalGrades: [0, 0, 0, 0, 0],
+      resitGrades1: [0, 0, 0, 0, 0],
+      resitGrades2: [0, 0, 0, 0, 0]
+    });
+
+
+    res.status(201).json({
+      id: user.id,
+      name: user.name,
+      phone: user.phone,
+      role: role,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    });
+
+  } catch (err) {
+    console.error("❌ Error creating user:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 const generateToken = (user) => {
     return jwt.sign(
@@ -29,50 +79,6 @@ const authenticateToken = (req, res, next) => {
         next();
     });
 };
-
-router.post("/users", upload.none(), async (req, res) => {
-  const { name, phone, password, role = 'user' } = req.body;
-
-  try {
-    const existingUser = await User.findOne({ where: { phone } });
-
-    if (existingUser) {
-      return res.status(400).json({ error: "الهاتف قيد الاستخدام بالفعل" });
-    }
-
-    if (phone.length !== 11) {
-      return res.status(400).json({ error: "يجب أن يتكون رقم الهاتف من 11 رقمًا" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-    const user = await User.create({ name, phone, password: hashedPassword, role });
-
-    await Grade.create({
-      userId: user.id,
-      unit1: 0,
-      unit2: 0,
-      unit3: 0,
-      unit4: 0,
-      unit5: 0,
-      unit6: 0,
-      unit7: 0,
-      unit8: 0
-    });
-
-    res.status(201).json({
-      id: user.id,
-      name: user.name,
-      phone: user.phone,
-      role: role,
-      createdAt: user.createdAt,
-      updatedAt: user.updatedAt
-    });
-
-  } catch (err) {
-    console.error("❌ Error creating user:", err);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
 
 router.post("/login", upload.none() ,async (req, res) => {
     const { phone, password } = req.body;
