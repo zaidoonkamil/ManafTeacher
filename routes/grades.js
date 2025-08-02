@@ -3,61 +3,52 @@ const router = express.Router();
 const { User, Grade } = require('../models');
 const multer = require("multer");
 const upload = multer();
-const { sendNotificationToUser } = require('../services/notifications');
 const { Op } = require('sequelize');
 
-router.post('/grades', upload.none(), async (req, res) => {
+router.post('/grades', async (req, res) => {
   try {
-    const gradesData = req.body.grades || [];
+    const parsedGrades = Array.isArray(req.body) ? req.body : [];
 
-    if (!Array.isArray(gradesData) || gradesData.length === 0) {
+    if (parsedGrades.length === 0) {
       return res.status(400).json({ error: "قائمة الدرجات غير صحيحة أو فارغة" });
     }
 
-    const cleanGrade = (value) => {
-      return (value === undefined || value === null || value === "") ? 0 : value;
-    };
-
     const results = [];
 
-    for (const entry of gradesData) {
-      const { userId, unit1, unit2, unit3, unit4, unit5, unit6, unit7, unit8 } = entry;
+    for (const entry of parsedGrades) {
+      const {
+        userId,
+        unitName = "Unit One",
+        lectureNos = [],
+        examGrades = [],
+        originalGrades = [],
+        resitGrades1 = [],
+        resitGrades2 = []
+      } = entry;
 
       if (!userId) continue;
 
-      let grade = await Grade.findOne({ where: { userId } });
+      let grade = await Grade.findOne({ where: { userId, unitName } });
 
       if (grade) {
-        grade.unit1 = (unit1 !== undefined && unit1 !== "") ? unit1 : grade.unit1;
-        grade.unit2 = (unit2 !== undefined && unit2 !== "") ? unit2 : grade.unit2;
-        grade.unit3 = (unit3 !== undefined && unit3 !== "") ? unit3 : grade.unit3;
-        grade.unit4 = (unit4 !== undefined && unit4 !== "") ? unit4 : grade.unit4;
-        grade.unit5 = (unit5 !== undefined && unit5 !== "") ? unit5 : grade.unit5;
-        grade.unit6 = (unit5 !== undefined && unit6 !== "") ? unit6 : grade.unit6;
-        grade.unit7 = (unit5 !== undefined && unit7 !== "") ? unit7 : grade.unit7;
-        grade.unit8 = (unit5 !== undefined && unit8 !== "") ? unit8 : grade.unit8;
+        grade.lectureNos = lectureNos;
+        grade.examGrades = examGrades;
+        grade.originalGrades = originalGrades;
+        grade.resitGrades1 = resitGrades1;
+        grade.resitGrades2 = resitGrades2;
         await grade.save();
-        results.push({ userId, status: "تم التحديث", grade });
-        
-      /*  try {
-          await sendNotificationToUser(userId, `تم تحديث درجاتك`, "تحديث الدرجات");
-          console.log(`✅ تم إرسال إشعار للمستخدم ${userId}`);
-        } catch (notifyErr) {
-          console.error(`❌ فشل في إرسال إشعار للمستخدم ${userId}:`, notifyErr);
-        }*/
+        results.push({ userId, status: "✅ تم التحديث", grade });
       } else {
         const newGrade = await Grade.create({
           userId,
-          unit1: cleanGrade(unit1),
-          unit2: cleanGrade(unit2),
-          unit3: cleanGrade(unit3),
-          unit4: cleanGrade(unit4),
-          unit5: cleanGrade(unit5),
-          unit6: cleanGrade(unit6),
-          unit7: cleanGrade(unit7), 
-          unit8: cleanGrade(unit8)
+          unitName,
+          lectureNos,
+          examGrades,
+          originalGrades,
+          resitGrades1,
+          resitGrades2
         });
-        results.push({ userId, status: "تمت الإضافة", grade: newGrade });
+        results.push({ userId, status: "✅ تمت الإضافة", grade: newGrade });
       }
     }
 
@@ -74,18 +65,26 @@ router.post('/grades', upload.none(), async (req, res) => {
 
 router.get('/grades', async (req, res) => {
   try {
-    const studentsWithGrades = await User.findAll({
-      attributes: ['id', 'name', 'phone'],
-      where: { role: { [Op.ne]: 'admin' } },
-      include: [
-        {
-          model: Grade,
-          as: 'grade',
-          attributes: ['unit1', 'unit2', 'unit3', 'unit4', 'unit5', 'unit6', 'unit7', 'unit8'],
-        }
-      ],
-      order: [['id', 'ASC']]
-    });
+      const studentsWithGrades = await User.findAll({
+        attributes: ['id', 'name', 'phone'],
+        where: { role: { [Op.ne]: 'admin' } },
+        include: [
+          {
+            model: Grade,
+            as: 'grade',
+            attributes: [
+              'unitName', 
+              'lectureNos', 
+              'examGrades', 
+              'originalGrades', 
+              'resitGrades1', 
+              'resitGrades2'
+            ],
+          }
+        ],
+        order: [['id', 'ASC']]
+      });
+
 
     res.json({ students: studentsWithGrades });
   } catch (error) {
@@ -100,12 +99,19 @@ router.get('/grades/:id', async (req, res) => {
   try {
     const studentWithGrade = await User.findOne({
       where: { id },
-      attributes: ['id', 'name'],
+      attributes: ['id', 'name', 'phone'],  // أضفت phone عشان نفس التفاصيل مثل الراوت الأولى
       include: [
         {
           model: Grade,
           as: 'grade',
-          attributes: ['unit1', 'unit2', 'unit3', 'unit4', 'unit5', 'unit6', 'unit7', 'unit8'],
+          attributes: [
+            'unitName',
+            'lectureNos',
+            'examGrades',
+            'originalGrades',
+            'resitGrades1',
+            'resitGrades2'
+          ],
         }
       ]
     });

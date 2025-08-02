@@ -9,19 +9,13 @@ const lessonRoutes = require("./routes/lesson");
 const notifications = require("./routes/notifications.js");
 const examRoutes = require('./routes/exam');
 const gradesRoutes = require('./routes/grades');
-const { TextExamAnswer } = require('./models');
-
-TextExamAnswer.findAll({
-  include: [{ association: 'user', attributes: ['id', 'name'] }]
-}).then(res => console.log("✅ العلاقات تعمل")).catch(err => console.log("❌ فشل", err.message));
-
 
 const app = express();
 app.use(express.json());
 app.use("/uploads", express.static("./" + "uploads"));
 
 
-sequelize.sync({ alter: true })
+sequelize.sync({ force: true })
     .then(() => console.log("✅ Database & User table synced!"))
     .catch(err => console.error("❌ Error syncing database:", err));
 

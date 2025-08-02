@@ -6,46 +6,36 @@ const Grade = sequelize.define('Grade', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  unit1: {
-    type: DataTypes.FLOAT,
+  unitName: {
+    type: DataTypes.STRING,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: "Unit One"
   },
-  unit2: {
-    type: DataTypes.FLOAT,
+  lectureNos: {
+    type: DataTypes.JSON,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: []
   },
-  unit3: {
-    type: DataTypes.FLOAT,
+  examGrades: {
+    type: DataTypes.JSON,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: []
   },
-  unit4: {
-    type: DataTypes.FLOAT,
+  originalGrades: {
+    type: DataTypes.JSON,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: []
   },
-  unit5: {
-    type: DataTypes.FLOAT,
+  resitGrades1: {
+    type: DataTypes.JSON,
     allowNull: false,
-    defaultValue: 0
+    defaultValue: []
   },
-  unit6: {
-    type: DataTypes.FLOAT,
+  resitGrades2: {
+    type: DataTypes.JSON,
     allowNull: false,
-    defaultValue: 0
-  },
-  unit7: {
-    type: DataTypes.FLOAT,
-    allowNull: false,
-    defaultValue: 0
-  },
-  unit8: {
-    type: DataTypes.FLOAT,
-    allowNull: false,
-    defaultValue: 0
-  },
+    defaultValue: []
+  }
 }, {
   timestamps: true,
 });
