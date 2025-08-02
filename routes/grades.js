@@ -12,13 +12,24 @@ router.post('/grades', async (req, res) => {
     if (parsedGrades.length === 0) {
       return res.status(400).json({ error: "قائمة الدرجات غير صحيحة أو فارغة" });
     }
+    const newUnitName = parsedGrades[0].unitName || "Unit One";
+
+    const existingUnit = await Grade.findOne();
+
+    if (existingUnit && existingUnit.unitName !== newUnitName) {
+      await Grade.update(
+        { unitName: newUnitName },
+        { where: {} } 
+      );
+      console.log(`📝 تم تحديث اسم الوحدة من '${existingUnit.unitName}' إلى '${newUnitName}' لكل المستخدمين.`);
+    }
 
     const results = [];
 
     for (const entry of parsedGrades) {
       const {
         userId,
-        unitName = "Unit One",
+        unitName = newUnitName,
         lectureNos = [],
         examGrades = [],
         originalGrades = [],
