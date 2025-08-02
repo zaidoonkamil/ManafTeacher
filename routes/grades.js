@@ -12,6 +12,7 @@ router.post('/grades', async (req, res) => {
     if (parsedGrades.length === 0) {
       return res.status(400).json({ error: "قائمة الدرجات غير صحيحة أو فارغة" });
     }
+
     const newUnitName = parsedGrades[0].unitName || "Unit One";
 
     const existingUnit = await Grade.findOne();
@@ -19,7 +20,7 @@ router.post('/grades', async (req, res) => {
     if (existingUnit && existingUnit.unitName !== newUnitName) {
       await Grade.update(
         { unitName: newUnitName },
-        { where: {} } 
+        { where: {} }
       );
       console.log(`📝 تم تحديث اسم الوحدة من '${existingUnit.unitName}' إلى '${newUnitName}' لكل المستخدمين.`);
     }
@@ -30,6 +31,7 @@ router.post('/grades', async (req, res) => {
       const {
         userId,
         unitName = newUnitName,
+        lectureName = "",         // 🟢 جلب lectureName هنا
         lectureNos = [],
         examGrades = [],
         originalGrades = [],
@@ -42,6 +44,7 @@ router.post('/grades', async (req, res) => {
       let grade = await Grade.findOne({ where: { userId, unitName } });
 
       if (grade) {
+        grade.lectureName = lectureName;  // 🟢 تحديثه في السجل القديم
         grade.lectureNos = lectureNos;
         grade.examGrades = examGrades;
         grade.originalGrades = originalGrades;
@@ -53,6 +56,7 @@ router.post('/grades', async (req, res) => {
         const newGrade = await Grade.create({
           userId,
           unitName,
+          lectureName,            // 🟢 حفظه في السجل الجديد
           lectureNos,
           examGrades,
           originalGrades,
@@ -85,6 +89,7 @@ router.get('/grades', async (req, res) => {
             as: 'grade',
             attributes: [
               'unitName', 
+              'lectureName',
               'lectureNos', 
               'examGrades', 
               'originalGrades', 

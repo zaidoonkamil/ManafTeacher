@@ -11,6 +11,11 @@ const Grade = sequelize.define('Grade', {
     allowNull: false,
     defaultValue: "Unit One"
   },
+  lectureName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: "lecture One"
+  },
   lectureNos: {
     type: DataTypes.JSON,
     allowNull: false,

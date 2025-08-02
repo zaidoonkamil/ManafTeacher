@@ -28,16 +28,14 @@ router.post("/users", upload.none(), async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     const user = await User.create({ name, phone, password: hashedPassword, role });
 
-    const existingUnit = await Grade.findOne({
-      attributes: ['unitName'],
+    const existingGrade = await Grade.findOne({
       order: [['createdAt', 'ASC']],
     });
 
-    const unitName = existingUnit ? existingUnit.unitName : "Unit One";
-
     await Grade.create({
       userId: user.id,
-      unitName: unitName,
+      unitName: existingGrade?.unitName || "Unit One",
+      lectureName: existingGrade?.lectureName || "lecture One",
       lectureNos: [1, 2, 3, 4, 5],
       examGrades: [0, 0, 0, 0, 0],
       originalGrades: [0, 0, 0, 0, 0],
