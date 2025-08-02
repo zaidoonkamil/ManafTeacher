@@ -21,8 +21,8 @@ router.post("/users", upload.none(), async (req, res) => {
       return res.status(400).json({ error: "الهاتف قيد الاستخدام بالفعل" });
     }
 
-    if (phone.length !== 11) {
-      return res.status(400).json({ error: "يجب أن يتكون رقم الهاتف من 11 رقمًا" });
+    if (phone.length !== 13) {
+      return res.status(400).json({ error: "يجب أن يتكون رقم الهاتف من 13 رقمًا" });
     }
 
     const hashedPassword = await bcrypt.hash(password, saltRounds);
