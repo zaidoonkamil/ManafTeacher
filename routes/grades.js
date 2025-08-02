@@ -122,6 +122,7 @@ router.get('/grades/:id', async (req, res) => {
           as: 'grade',
           attributes: [
             'unitName',
+            'lectureName',
             'lectureNos',
             'examGrades',
             'originalGrades',
