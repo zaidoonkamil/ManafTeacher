@@ -36,7 +36,7 @@ router.post("/users", upload.none(), async (req, res) => {
       userId: user.id,
       unitName: existingGrade?.unitName || "Unit One",
       lectureName: existingGrade?.lectureName || "lecture One",
-      lectureNos: [1, 2, 3, 4, 5],
+      lectureNos: existingGrade?.lectureNos || [1, 2, 3, 4, 5],
       examGrades: [0, 0, 0, 0, 0],
       originalGrades: [0, 0, 0, 0, 0],
       resitGrades1: [0, 0, 0, 0, 0],

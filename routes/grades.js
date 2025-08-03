@@ -115,7 +115,7 @@ router.get('/grades/:id', async (req, res) => {
   try {
     const studentWithGrade = await User.findOne({
       where: { id },
-      attributes: ['id', 'name', 'phone'],  // أضفت phone عشان نفس التفاصيل مثل الراوت الأولى
+      attributes: ['id', 'name', 'phone'],
       include: [
         {
           model: Grade,
