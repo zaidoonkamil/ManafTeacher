@@ -13,26 +13,29 @@ router.post('/grades', async (req, res) => {
       return res.status(400).json({ error: "قائمة الدرجات غير صحيحة أو فارغة" });
     }
 
-    const newUnitName = parsedGrades[0].unitName || "Unit One";
+    const {
+      unitName: newUnitName = "Unit One",
+      lectureName: newLectureName = "lecture One",
+      lectureNos: newLectureNos = [1, 2, 3, 4, 5]
+    } = parsedGrades[0];
 
     const existingUnit = await Grade.findOne();
-
     if (existingUnit && existingUnit.unitName !== newUnitName) {
-      await Grade.update(
-        { unitName: newUnitName },
-        { where: {} }
-      );
+      await Grade.update({ unitName: newUnitName }, { where: {} });
       console.log(`📝 تم تحديث اسم الوحدة من '${existingUnit.unitName}' إلى '${newUnitName}' لكل المستخدمين.`);
     }
+
+    await Grade.update(
+      { lectureName: newLectureName, lectureNos: newLectureNos },
+      { where: { unitName: newUnitName } }
+    );
+    console.log(`📝 تم تحديث المحاضرات وأرقامها لجميع المستخدمين الذين لديهم الوحدة '${newUnitName}'`);
 
     const results = [];
 
     for (const entry of parsedGrades) {
       const {
         userId,
-        unitName = newUnitName,
-        lectureName = "",         // 🟢 جلب lectureName هنا
-        lectureNos = [],
         examGrades = [],
         originalGrades = [],
         resitGrades1 = [],
@@ -41,11 +44,9 @@ router.post('/grades', async (req, res) => {
 
       if (!userId) continue;
 
-      let grade = await Grade.findOne({ where: { userId, unitName } });
+      let grade = await Grade.findOne({ where: { userId, unitName: newUnitName } });
 
       if (grade) {
-        grade.lectureName = lectureName;  // 🟢 تحديثه في السجل القديم
-        grade.lectureNos = lectureNos;
         grade.examGrades = examGrades;
         grade.originalGrades = originalGrades;
         grade.resitGrades1 = resitGrades1;
@@ -55,9 +56,9 @@ router.post('/grades', async (req, res) => {
       } else {
         const newGrade = await Grade.create({
           userId,
-          unitName,
-          lectureName,            // 🟢 حفظه في السجل الجديد
-          lectureNos,
+          unitName: newUnitName,
+          lectureName: newLectureName,
+          lectureNos: newLectureNos,
           examGrades,
           originalGrades,
           resitGrades1,
@@ -68,7 +69,7 @@ router.post('/grades', async (req, res) => {
     }
 
     return res.status(200).json({
-      message: "✅ تم حفظ الدرجات بنجاح",
+      message: "✅ تم حفظ الدرجات بنجاح وتحديث المعلومات العامة",
       results
     });
 
