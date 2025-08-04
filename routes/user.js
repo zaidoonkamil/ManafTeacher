@@ -35,8 +35,8 @@ router.post("/users", upload.none(), async (req, res) => {
     await Grade.create({
       userId: user.id,
       unitName: existingGrade?.unitName || "Unit One",
-      lectureName: existingGrade?.lectureName || "lecture One",
-      lectureNos: existingGrade?.lectureNos || [1, 2, 3, 4, 5],
+      lectureName: existingGrade?.lectureName || "lecture No",
+      lectureNos: existingGrade?.lectureNos || ["lecture 1", "lecture 2", "lecture 3", "lecture 4", "lecture 5"],
       examGrades: [0, 0, 0, 0, 0],
       originalGrades: [0, 0, 0, 0, 0],
       resitGrades1: [0, 0, 0, 0, 0],

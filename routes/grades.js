@@ -15,8 +15,8 @@ router.post('/grades', async (req, res) => {
 
     const {
       unitName: newUnitName = "Unit One",
-      lectureName: newLectureName = "lecture One",
-      lectureNos: newLectureNos = [1, 2, 3, 4, 5]
+      lectureName: newLectureName = "lecture No",
+      lectureNos: newLectureNos = ["lecture 1", "lecture 2", "lecture 3", "lecture 4", "lecture 5"]
     } = parsedGrades[0];
 
     const existingUnit = await Grade.findOne();
