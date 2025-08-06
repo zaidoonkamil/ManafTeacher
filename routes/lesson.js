@@ -90,12 +90,16 @@ router.patch("/lessons/:id/lock", async (req, res) => {
     const { id } = req.params;
     const { isLocked } = req.body;
 
+    if (typeof isLocked !== 'boolean') {
+      return res.status(400).json({ error: "قيمة isLocked يجب أن تكون true أو false" });
+    }
+
     const lesson = await Lesson.findByPk(id);
     if (!lesson) {
       return res.status(404).json({ error: "الدرس غير موجود" });
     }
 
-    lesson.isLocked = isLocked; 
+    lesson.isLocked = isLocked;
     await lesson.save();
 
     res.status(200).json({ message: `تم ${isLocked ? "قفل" : "فتح"} الدرس بنجاح`, lesson });
@@ -104,5 +108,13 @@ router.patch("/lessons/:id/lock", async (req, res) => {
     res.status(500).json({ error: "خطأ في الخادم الداخلي" });
   }
 });
+
+router.patch("/lessons/update-lock-field", async (req, res) => {
+  const [updatedCount] = await Lesson.update(
+    { isLocked: false },
+    { where: { isLocked: null } }
+  );
+});
+
 
 module.exports = router;
