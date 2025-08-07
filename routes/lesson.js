@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Lesson = require('../models/lesson');
 const upload = require("../middlewares/uploads");
+const sequelize = require('../config/db');
 
 
 router.patch('/lessons/migrate-videoUrl-to-text', async (req, res) => {
