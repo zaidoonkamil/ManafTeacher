@@ -3,6 +3,33 @@ const router = express.Router();
 const Lesson = require('../models/lesson');
 const upload = require("../middlewares/uploads");
 
+router.patch("/lessons/update-all", async (req, res) => {
+  try {
+    // مثال: تحديث حقل isLocked إلى false حيث كان null
+    const [updatedCount] = await Lesson.update(
+      { isLocked: false },         // قيم التحديث
+      {
+        where: {
+          isLocked: null           // الشرط (يمكن تغييره حسب حاجتك)
+        }
+      }
+    );
+
+    // مثال: يمكن إضافة تحديثات أخرى هنا حسب حاجتك
+
+    res.status(200).json({
+      message: `✅ تم تحديث ${updatedCount} درس لتتوافق مع الموديل الجديد.`,
+    });
+  } catch (err) {
+    console.error("❌ خطأ أثناء تحديث الدروس:", err);
+    res.status(500).json({
+      error: "Internal Server Error",
+      details: err.message,
+    });
+  }
+});
+
+
 router.patch("/lessons/update-lock-field", async (req, res) => {
   try {
     const [updatedCount] = await Lesson.update(

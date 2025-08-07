@@ -12,7 +12,7 @@ const Lesson = sequelize.define('Lesson', {
     allowNull: false
   },
   videoUrl: {
-    type: DataTypes.STRING
+    type: DataTypes.TEXT
   },
   pdfUrl: {
     type: DataTypes.STRING,
