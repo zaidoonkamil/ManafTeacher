@@ -8,7 +8,6 @@ const { Op } = require('sequelize');
 router.post('/grades', async (req, res) => {
   try {
     const parsedGrades = Array.isArray(req.body) ? req.body : [];
-
     if (parsedGrades.length === 0) {
       return res.status(400).json({ error: "قائمة الدرجات غير صحيحة أو فارغة" });
     }
@@ -22,23 +21,14 @@ router.post('/grades', async (req, res) => {
     const existingUnit = await Grade.findOne();
 
     if (existingUnit && existingUnit.unitName !== newUnitName) {
-      // نجلب كل الدرجات للوحدة القديمة
       const gradesToReset = await Grade.findAll({ where: { unitName: existingUnit.unitName } });
 
       for (const grade of gradesToReset) {
-        // نصفر الدرجات بنفس طولها الأصلي
-        const zeroExamGrades = new Array(grade.examGrades.length).fill(0);
-        const zeroOriginalGrades = new Array(grade.originalGrades.length).fill(0);
-        const zeroResitGrades1 = new Array(grade.resitGrades1.length).fill(0);
-        const zeroResitGrades2 = new Array(grade.resitGrades2.length).fill(0);
-
-        // نحدث الحقول
         grade.unitName = newUnitName;
-        grade.examGrades = zeroExamGrades;
-        grade.originalGrades = zeroOriginalGrades;
-        grade.resitGrades1 = zeroResitGrades1;
-        grade.resitGrades2 = zeroResitGrades2;
-
+        grade.examGrades = Array(grade.examGrades.length).fill(0);
+        grade.originalGrades = Array(grade.originalGrades.length).fill(0);
+        grade.resitGrades1 = Array(grade.resitGrades1.length).fill(0);
+        grade.resitGrades2 = Array(grade.resitGrades2.length).fill(0);
         await grade.save();
       }
 
@@ -49,24 +39,24 @@ router.post('/grades', async (req, res) => {
       { lectureName: newLectureName, lectureNos: newLectureNos },
       { where: { unitName: newUnitName } }
     );
-    console.log(`📝 تم تحديث المحاضرات وأرقامها لجميع الطلاب للوحدة '${newUnitName}'`);
 
     const results = [];
-
-    for (const entry of parsedGrades) {
-      const {
-        userId,
-        examGrades = [],
-        originalGrades = [],
-        resitGrades1 = [],
-        resitGrades2 = []
-      } = entry;
-
+    for (const { userId, examGrades = [], originalGrades = [], resitGrades1 = [], resitGrades2 = [] } of parsedGrades) {
       if (!userId) continue;
 
-      let grade = await Grade.findOne({ where: { userId, unitName: newUnitName } });
+      const [grade, created] = await Grade.findOrCreate({
+        where: { userId, unitName: newUnitName },
+        defaults: {
+          lectureName: newLectureName,
+          lectureNos: newLectureNos,
+          examGrades,
+          originalGrades,
+          resitGrades1,
+          resitGrades2
+        }
+      });
 
-      if (grade) {
+      if (!created) {
         grade.examGrades = examGrades;
         grade.originalGrades = originalGrades;
         grade.resitGrades1 = resitGrades1;
@@ -74,17 +64,7 @@ router.post('/grades', async (req, res) => {
         await grade.save();
         results.push({ userId, status: "✅ تم التحديث", grade });
       } else {
-        const newGrade = await Grade.create({
-          userId,
-          unitName: newUnitName,
-          lectureName: newLectureName,
-          lectureNos: newLectureNos,
-          examGrades,
-          originalGrades,
-          resitGrades1,
-          resitGrades2
-        });
-        results.push({ userId, status: "✅ تمت الإضافة", grade: newGrade });
+        results.push({ userId, status: "✅ تمت الإضافة", grade });
       }
     }
 
@@ -98,7 +78,6 @@ router.post('/grades', async (req, res) => {
     res.status(500).json({ error: "حدث خطأ أثناء معالجة الطلب" });
   }
 });
-
 
 router.get('/grades', async (req, res) => {
   try {
