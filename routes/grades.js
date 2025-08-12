@@ -22,13 +22,23 @@ router.post('/grades', async (req, res) => {
     const existingUnit = await Grade.findOne();
 
     if (existingUnit && existingUnit.unitName !== newUnitName) {
+      const sampleGrade = await Grade.findOne({ where: { unitName: existingUnit.unitName } });
+      if (!sampleGrade) {
+        return res.status(500).json({ error: "لا يمكن العثور على عينات لتصفير الدرجات." });
+      }
+
+      const zeroExamGrades = new Array(sampleGrade.examGrades.length).fill(0);
+      const zeroOriginalGrades = new Array(sampleGrade.originalGrades.length).fill(0);
+      const zeroResitGrades1 = new Array(sampleGrade.resitGrades1.length).fill(0);
+      const zeroResitGrades2 = new Array(sampleGrade.resitGrades2.length).fill(0);
+
       await Grade.update(
         {
           unitName: newUnitName,
-          examGrades: [],
-          originalGrades: [],
-          resitGrades1: [],
-          resitGrades2: []
+          examGrades: zeroExamGrades,
+          originalGrades: zeroOriginalGrades,
+          resitGrades1: zeroResitGrades1,
+          resitGrades2: zeroResitGrades2
         },
         { where: {} }
       );
@@ -88,6 +98,7 @@ router.post('/grades', async (req, res) => {
     res.status(500).json({ error: "حدث خطأ أثناء معالجة الطلب" });
   }
 });
+
 
 router.get('/grades', async (req, res) => {
   try {
