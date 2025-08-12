@@ -20,16 +20,26 @@ router.post('/grades', async (req, res) => {
     } = parsedGrades[0];
 
     const existingUnit = await Grade.findOne();
+
     if (existingUnit && existingUnit.unitName !== newUnitName) {
-      await Grade.update({ unitName: newUnitName }, { where: {} });
-      console.log(`📝 تم تحديث اسم الوحدة من '${existingUnit.unitName}' إلى '${newUnitName}' لكل المستخدمين.`);
+      await Grade.update(
+        {
+          unitName: newUnitName,
+          examGrades: [],
+          originalGrades: [],
+          resitGrades1: [],
+          resitGrades2: []
+        },
+        { where: {} }
+      );
+      console.log(`📝 تم تحديث اسم الوحدة إلى '${newUnitName}' وتم تصفير كل درجات الطلاب.`);
     }
 
     await Grade.update(
       { lectureName: newLectureName, lectureNos: newLectureNos },
       { where: { unitName: newUnitName } }
     );
-    console.log(`📝 تم تحديث المحاضرات وأرقامها لجميع المستخدمين الذين لديهم الوحدة '${newUnitName}'`);
+    console.log(`📝 تم تحديث المحاضرات وأرقامها لجميع الطلاب للوحدة '${newUnitName}'`);
 
     const results = [];
 
