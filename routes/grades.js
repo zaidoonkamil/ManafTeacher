@@ -22,26 +22,26 @@ router.post('/grades', async (req, res) => {
     const existingUnit = await Grade.findOne();
 
     if (existingUnit && existingUnit.unitName !== newUnitName) {
-      const sampleGrade = await Grade.findOne({ where: { unitName: existingUnit.unitName } });
-      if (!sampleGrade) {
-        return res.status(500).json({ error: "لا يمكن العثور على عينات لتصفير الدرجات." });
+      // نجلب كل الدرجات للوحدة القديمة
+      const gradesToReset = await Grade.findAll({ where: { unitName: existingUnit.unitName } });
+
+      for (const grade of gradesToReset) {
+        // نصفر الدرجات بنفس طولها الأصلي
+        const zeroExamGrades = new Array(grade.examGrades.length).fill(0);
+        const zeroOriginalGrades = new Array(grade.originalGrades.length).fill(0);
+        const zeroResitGrades1 = new Array(grade.resitGrades1.length).fill(0);
+        const zeroResitGrades2 = new Array(grade.resitGrades2.length).fill(0);
+
+        // نحدث الحقول
+        grade.unitName = newUnitName;
+        grade.examGrades = zeroExamGrades;
+        grade.originalGrades = zeroOriginalGrades;
+        grade.resitGrades1 = zeroResitGrades1;
+        grade.resitGrades2 = zeroResitGrades2;
+
+        await grade.save();
       }
 
-      const zeroExamGrades = new Array(sampleGrade.examGrades.length).fill(0);
-      const zeroOriginalGrades = new Array(sampleGrade.originalGrades.length).fill(0);
-      const zeroResitGrades1 = new Array(sampleGrade.resitGrades1.length).fill(0);
-      const zeroResitGrades2 = new Array(sampleGrade.resitGrades2.length).fill(0);
-
-      await Grade.update(
-        {
-          unitName: newUnitName,
-          examGrades: zeroExamGrades,
-          originalGrades: zeroOriginalGrades,
-          resitGrades1: zeroResitGrades1,
-          resitGrades2: zeroResitGrades2
-        },
-        { where: {} }
-      );
       console.log(`📝 تم تحديث اسم الوحدة إلى '${newUnitName}' وتم تصفير كل درجات الطلاب.`);
     }
 
