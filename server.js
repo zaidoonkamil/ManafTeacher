@@ -9,8 +9,12 @@ const lessonRoutes = require("./routes/lesson");
 const notifications = require("./routes/notifications.js");
 const examRoutes = require('./routes/exam');
 const gradesRoutes = require('./routes/grades');
+const cors = require("cors");
 
 const app = express();
+app.use(cors({
+  origin: "*"
+}));
 app.use(express.json());
 app.use("/uploads", express.static("./" + "uploads"));
 
