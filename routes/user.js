@@ -9,6 +9,7 @@ dotenv.config();
 const multer = require("multer");
 const upload = multer();
 const { Op } = require('sequelize');
+const Lesson = require('../models/lesson');
 
 
 router.post("/users", upload.none(), async (req, res) => {
@@ -43,6 +44,14 @@ router.post("/users", upload.none(), async (req, res) => {
       resitGrades2: [0, 0, 0, 0, 0]
     });
 
+    const lessons = await Lesson.findAll();
+    for (const lesson of lessons) {
+      await UserLessons.create({
+        userId: user.id,
+        lessonId: lesson.id,
+        isLocked: false 
+      });
+    }
 
     res.status(201).json({
       id: user.id,

@@ -6,6 +6,22 @@ const sequelize = require('../config/db');
 const UserLessons = require("../models/UserLessons");
 const User = require("../models/user");
 
+router.patch("/lessons/unlock-all", async (req, res) => {
+  try {
+    const [updatedCount] = await UserLessons.update(
+      { isLocked: false },     
+      { where: {} }            
+    );
+
+    res.status(200).json({
+      message: `✅ تم فتح ${updatedCount} محاضرة لجميع الطلاب بنجاح.`
+    });
+  } catch (err) {
+    console.error("❌ خطأ أثناء فتح جميع المحاضرات:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 router.get("/users/:userId/lessons", async (req, res) => {
   try {
     const { userId } = req.params;
@@ -118,6 +134,15 @@ router.post("/lessons", upload.array("images", 5), async (req, res) => {
       courseId,
       pdfUrl: pdfUrl || null
     });
+    
+    const users = await User.findAll();
+    for (const user of users) {
+      await UserLessons.create({
+        userId: user.id,
+        lessonId: lesson.id,
+        isLocked: false 
+      });
+    }
 
     res.status(201).json(lesson);
   } catch (err) {
