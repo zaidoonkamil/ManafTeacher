@@ -6,6 +6,35 @@ const sequelize = require('../config/db');
 const UserLessons = require("../models/UserLessons");
 const User = require("../models/user");
 
+router.get("/users/:userId/lessons-status", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findByPk(userId, {
+      include: {
+        model: Lesson,
+        as: "lessons",
+        through: { attributes: ["isLocked"] } 
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "الطالب غير موجود" });
+    }
+
+    const unlockedLessons = user.lessons.filter(lesson => !lesson.UserLessons.isLocked);
+    const lockedLessons = user.lessons.filter(lesson => lesson.UserLessons.isLocked);
+
+    res.status(200).json({
+      unlockedLessons, 
+      lockedLessons    
+    });
+  } catch (err) {
+    console.error("❌ Error fetching user lessons status:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 router.patch("/lessons/unlock-all", async (req, res) => {
   try {
     const [updatedCount] = await UserLessons.update(
