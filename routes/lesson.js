@@ -23,11 +23,11 @@ router.get("/users/:userId/lessons-status", async (req, res) => {
     }
 
     const unlockedLessons = user.lessons.filter(lesson => !lesson.UserLessons.isLocked);
-    const lockedLessons = user.lessons.filter(lesson => lesson.UserLessons.isLocked);
+   // const lockedLessons = user.lessons.filter(lesson => lesson.UserLessons.isLocked);
 
     res.status(200).json({
       unlockedLessons, 
-      lockedLessons    
+   //   lockedLessons    
     });
   } catch (err) {
     console.error("❌ Error fetching user lessons status:", err);
