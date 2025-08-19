@@ -3,7 +3,67 @@ const router = express.Router();
 const Lesson = require('../models/lesson');
 const upload = require("../middlewares/uploads");
 const sequelize = require('../config/db');
+const UserLessons = require("../models/UserLessons");
+const User = require("../models/user");
 
+router.get("/users/:userId/lessons", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findByPk(userId, {
+      include: {
+        model: Lesson,
+        as: "lessons",
+        through: { attributes: ["isLocked"] }
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "الطالب غير موجود" });
+    }
+
+    res.status(200).json(user.lessons);
+  } catch (err) {
+    console.error("❌ Error fetching user lessons:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.patch("/lessons/:lessonId/lock-user/:userId", async (req, res) => {
+  try {
+    const { lessonId, userId } = req.params;
+    const { isLocked } = req.body;
+
+    if (typeof isLocked !== "boolean") {
+      return res.status(400).json({ error: "قيمة isLocked يجب أن تكون true أو false" });
+    }
+
+    const user = await User.findByPk(userId);
+    const lesson = await Lesson.findByPk(lessonId);
+
+    if (!user || !lesson) {
+      return res.status(404).json({ error: "الطالب أو المحاضرة غير موجود" });
+    }
+
+    const [userLesson, created] = await UserLessons.findOrCreate({
+      where: { userId, lessonId },
+      defaults: { isLocked }
+    });
+
+    if (!created) {
+      userLesson.isLocked = isLocked;
+      await userLesson.save();
+    }
+
+    res.status(200).json({
+      message: `تم ${isLocked ? "قفل" : "فتح"} المحاضرة للطالب بنجاح`,
+      userLesson
+    });
+  } catch (err) {
+    console.error("❌ Error locking lesson for user:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 router.patch('/lessons/migrate-videoUrl-to-text', async (req, res) => {
   try {

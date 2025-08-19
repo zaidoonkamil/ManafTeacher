@@ -9,6 +9,11 @@ const QuestionAnswer = require('./questionAnswer');
 const Exam = require('./exam'); 
 const TextExamAnswer = require("./TextExamAnswer");
 const Grade = require("./grade");
+const UserLessons = require("./UserLessons");
+const Lesson = require("./lesson");
+
+User.belongsToMany(Lesson, { through: UserLessons, foreignKey: "userId", as: "lessons" });
+Lesson.belongsToMany(User, { through: UserLessons, foreignKey: "lessonId", as: "users" });
 
 User.hasMany(UserDevice, { foreignKey: 'user_id', as: 'devices', onDelete: 'CASCADE' });
 UserDevice.belongsTo(User, { foreignKey: 'user_id', as: 'user', onDelete: 'CASCADE' });
@@ -53,4 +58,6 @@ module.exports = {
   Exam,
   TextExamAnswer,
   Grade,
+  UserLessons,
+  Lesson
 };
