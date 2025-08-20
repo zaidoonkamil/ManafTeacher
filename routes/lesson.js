@@ -10,12 +10,11 @@ router.get("/users/:userId/lessons-status", async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // جلب الطالب مع الدروس وربط UserLessons
     const user = await User.findByPk(userId, {
       include: {
         model: Lesson,
         as: "lessons",
-        through: { model: UserLessons, attributes: ["isLocked"] } // <== مهم
+        through: { attributes: ["isLocked"] }
       }
     });
 
@@ -23,7 +22,6 @@ router.get("/users/:userId/lessons-status", async (req, res) => {
       return res.status(404).json({ error: "الطالب غير موجود" });
     }
 
-    // تحويل البيانات للشكل المطلوب
     const lessonsWithStatus = user.lessons.map(lesson => ({
       id: lesson.id,
       title: lesson.title,
@@ -34,10 +32,12 @@ router.get("/users/:userId/lessons-status", async (req, res) => {
       courseId: lesson.courseId,
       createdAt: lesson.createdAt,
       updatedAt: lesson.updatedAt,
-      isLocked: lesson.UserLessons?.isLocked ?? false // إذا ما موجودة، افترض false
+      isLocked: lesson.UserLessons.isLocked 
     }));
 
-    res.status(200).json({ unlockedLessons: lessonsWithStatus });
+    res.status(200).json({
+      unlockedLessons: lessonsWithStatus
+    });
   } catch (err) {
     console.error("❌ Error fetching user lessons status:", err);
     res.status(500).json({ error: "Internal Server Error" });
