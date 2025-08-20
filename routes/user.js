@@ -10,7 +10,7 @@ const multer = require("multer");
 const upload = multer();
 const { Op } = require('sequelize');
 const Lesson = require('../models/lesson');
-const UserLessons = require("./UserLessons");
+const UserLessons = require('../models/UserLessons');
 
 router.post("/users", upload.none(), async (req, res) => {
   const { name, phone, password, role = 'user' } = req.body;
