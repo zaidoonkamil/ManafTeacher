@@ -7,23 +7,26 @@ const UserLessons = require("../models/UserLessons");
 const User = require("../models/user");
 
 
-router.patch("/lessons/remove-global-lock", async (req, res) => {
+
+router.patch("/lessons/add-pdf-url-column", async (req, res) => {
   try {
+    // نضيف العمود pdfUrl إذا لم يكن موجود
     await sequelize.query(
-      `ALTER TABLE Lessons DROP COLUMN isLocked`
+      `ALTER TABLE Lessons ADD COLUMN IF NOT EXISTS pdfUrl VARCHAR(255) DEFAULT NULL`
     );
 
     res.status(200).json({
-      message: "✅ تم حذف حقل isLocked العام من جدول Lessons بنجاح."
+      message: "✅ تم إضافة العمود pdfUrl لكل الدروس بنجاح."
     });
   } catch (err) {
-    console.error("❌ خطأ أثناء حذف حقل isLocked:", err);
+    console.error("❌ خطأ أثناء إضافة العمود pdfUrl:", err);
     res.status(500).json({
-      message: "❌ حدث خطأ أثناء حذف حقل isLocked",
-      error: err.message
+      error: "Internal Server Error",
+      details: err.message
     });
   }
 });
+
 
 
 router.get("/users/:userId/lessons-status", async (req, res) => {
