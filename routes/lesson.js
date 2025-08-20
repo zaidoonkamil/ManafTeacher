@@ -6,38 +6,22 @@ const sequelize = require('../config/db');
 const UserLessons = require("../models/UserLessons");
 const User = require("../models/user");
 
-router.get("/users/:userId/lessons-status", async (req, res) => {
+
+router.patch("/lessons/remove-global-lock", async (req, res) => {
   try {
-    const { userId } = req.params;
+    await sequelize.query(
+      `ALTER TABLE Lessons DROP COLUMN isLocked`
+    );
 
-    const lessons = await Lesson.findAll({
-      include: [
-        {
-          model: UserLessons,
-          as: "userLesson",
-          required: false, 
-          where: { userId }
-        }
-      ]
+    res.status(200).json({
+      message: "✅ تم حذف حقل isLocked العام من جدول Lessons بنجاح."
     });
-
-    const result = lessons.map(lesson => ({
-      id: lesson.id,
-      title: lesson.title,
-      description: lesson.description,
-      videoUrl: lesson.videoUrl,
-      images: lesson.images,
-      pdfUrl: lesson.pdfUrl,
-      courseId: lesson.courseId,
-      createdAt: lesson.createdAt,
-      updatedAt: lesson.updatedAt,
-      isLocked: lesson.userLesson ? lesson.userLesson.isLocked : false
-    }));
-
-    res.json({ lessons: result });
   } catch (err) {
-    console.error("❌ Error fetching lessons:", err);
-    res.status(500).json({ error: "Internal Server Error" });
+    console.error("❌ خطأ أثناء حذف حقل isLocked:", err);
+    res.status(500).json({
+      message: "❌ حدث خطأ أثناء حذف حقل isLocked",
+      error: err.message
+    });
   }
 });
 
