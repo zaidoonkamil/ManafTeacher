@@ -10,19 +10,18 @@ router.get("/users/:userId/lessons-status", async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const user = await User.findByPk(userId, {
-      include: {
-        model: Lesson,
-        as: "lessons",
-        through: { attributes: ["isLocked"] }
-      }
+    const lessons = await Lesson.findAll({
+      include: [
+        {
+          model: UserLessons,
+          as: "userLesson",
+          required: false, 
+          where: { userId }
+        }
+      ]
     });
 
-    if (!user) {
-      return res.status(404).json({ error: "الطالب غير موجود" });
-    }
-
-    const lessonsWithStatus = user.lessons.map(lesson => ({
+    const result = lessons.map(lesson => ({
       id: lesson.id,
       title: lesson.title,
       description: lesson.description,
@@ -32,18 +31,17 @@ router.get("/users/:userId/lessons-status", async (req, res) => {
       courseId: lesson.courseId,
       createdAt: lesson.createdAt,
       updatedAt: lesson.updatedAt,
-      isLocked: lesson.UserLessons.isLocked 
+      isLocked: lesson.userLesson
+        ? lesson.userLesson.isLocked
+        : lesson.isLocked
     }));
 
-    res.status(200).json({
-      unlockedLessons: lessonsWithStatus
-    });
+    res.json({ unlockedLessons: result });
   } catch (err) {
-    console.error("❌ Error fetching user lessons status:", err);
+    console.error("❌ Error fetching lessons:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
 
 router.patch("/lessons/unlock-all", async (req, res) => {
   try {
