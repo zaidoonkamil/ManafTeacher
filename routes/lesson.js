@@ -14,7 +14,7 @@ router.get("/users/:userId/lessons-status", async (req, res) => {
       include: {
         model: Lesson,
         as: "lessons",
-        through: { attributes: ["isLocked"] } 
+        through: { attributes: ["isLocked"] }
       }
     });
 
@@ -22,18 +22,24 @@ router.get("/users/:userId/lessons-status", async (req, res) => {
       return res.status(404).json({ error: "الطالب غير موجود" });
     }
 
-    const unlockedLessons = user.lessons.filter(lesson => !lesson.UserLessons.isLocked);
-   // const lockedLessons = user.lessons.filter(lesson => lesson.UserLessons.isLocked);
+    const lessonsWithStatus = user.lessons.map(lesson => ({
+      id: lesson.id,
+      title: lesson.title,
+      description: lesson.description,
+      videoUrl: lesson.videoUrl,
+      images: lesson.images,
+      isLocked: lesson.UserLessons.isLocked 
+    }));
 
     res.status(200).json({
-      unlockedLessons, 
-   //   lockedLessons    
+      unlockedLessons: lessonsWithStatus
     });
   } catch (err) {
     console.error("❌ Error fetching user lessons status:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 router.patch("/lessons/unlock-all", async (req, res) => {
   try {
