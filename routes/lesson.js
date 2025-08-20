@@ -6,21 +6,41 @@ const sequelize = require('../config/db');
 const UserLessons = require("../models/UserLessons");
 const User = require("../models/user");
 
-router.delete("/lessons/remove-pdfUrl-column", async (req, res) => {
+router.get("/users/:userId/lessons-status", async (req, res) => {
   try {
-    await sequelize.getQueryInterface().removeColumn("Lessons", "pdfUrl");
+    const { userId } = req.params;
 
-    res.status(200).json({
-      message: "✅ تم حذف العمود pdfUrl من جدول Lessons بنجاح.",
+    const lessons = await Lesson.findAll({
+      include: [
+        {
+          model: UserLessons,
+          as: "userLesson",
+          required: false, 
+          where: { userId }
+        }
+      ]
     });
+
+    const result = lessons.map(lesson => ({
+      id: lesson.id,
+      title: lesson.title,
+      description: lesson.description,
+      videoUrl: lesson.videoUrl,
+      images: lesson.images,
+      pdfUrl: lesson.pdfUrl,
+      courseId: lesson.courseId,
+      createdAt: lesson.createdAt,
+      updatedAt: lesson.updatedAt,
+      isLocked: lesson.userLesson ? lesson.userLesson.isLocked : false
+    }));
+
+    res.json({ lessons: result });
   } catch (err) {
-    console.error("❌ خطأ أثناء حذف العمود:", err);
-    res.status(500).json({
-      error: "❌ فشل في حذف العمود",
-      details: err.message,
-    });
+    console.error("❌ Error fetching lessons:", err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 router.get("/users/:userId/lessons-status", async (req, res) => {
   try {
