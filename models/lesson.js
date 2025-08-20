@@ -22,11 +22,6 @@ const Lesson = sequelize.define('Lesson', {
   description: {
     type: DataTypes.TEXT
   },
-  isLocked: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: false 
-  },
   courseId: {
     type: DataTypes.INTEGER,
     allowNull: false,
