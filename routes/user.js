@@ -214,5 +214,40 @@ router.delete("/users/:id", async (req, res) => {
     }
 });
 
+router.get("/search-users", async (req, res) => {
+  try {
+    const { name, phone } = req.query;
+
+    if (!name && !phone) {
+      return res.status(400).json({ error: "يجب إدخال الاسم أو رقم الهاتف للبحث" });
+    }
+
+    const whereClause = {};
+
+    if (name) {
+      whereClause.name = { [Op.like]: `%${name}%` }; 
+    }
+
+    if (phone) {
+      whereClause.phone = { [Op.like]: `%${phone}%` };
+    }
+
+    const users = await User.findAll({
+      where: whereClause,
+      attributes: { exclude: ['password'] },
+      order: [['createdAt', 'DESC']]
+    });
+
+    if (users.length === 0) {
+      return res.status(404).json({ message: "لم يتم العثور على مستخدمين" });
+    }
+
+    res.status(200).json(users);
+  } catch (err) {
+    console.error("❌ Error searching users:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 
 module.exports = router;
