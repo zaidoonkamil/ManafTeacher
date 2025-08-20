@@ -28,6 +28,8 @@ router.get("/users/:userId/lessons-status", async (req, res) => {
       description: lesson.description,
       videoUrl: lesson.videoUrl,
       images: lesson.images,
+      pdfUrl: lesson.pdfUrl,
+      createdAt: lesson.createdAt,
       isLocked: lesson.UserLessons.isLocked 
     }));
 
