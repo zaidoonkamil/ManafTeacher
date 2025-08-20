@@ -10,18 +10,21 @@ router.get("/users/:userId/lessons-status", async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const lessons = await Lesson.findAll({
-      include: [
-        {
-          model: UserLessons,
-          as: "userLesson",
-          required: false, 
-          where: { userId }
-        }
-      ]
+    // جلب الطالب مع الدروس وربط UserLessons
+    const user = await User.findByPk(userId, {
+      include: {
+        model: Lesson,
+        as: "lessons",
+        through: { model: UserLessons, attributes: ["isLocked"] } // <== مهم
+      }
     });
 
-    const result = lessons.map(lesson => ({
+    if (!user) {
+      return res.status(404).json({ error: "الطالب غير موجود" });
+    }
+
+    // تحويل البيانات للشكل المطلوب
+    const lessonsWithStatus = user.lessons.map(lesson => ({
       id: lesson.id,
       title: lesson.title,
       description: lesson.description,
@@ -31,14 +34,12 @@ router.get("/users/:userId/lessons-status", async (req, res) => {
       courseId: lesson.courseId,
       createdAt: lesson.createdAt,
       updatedAt: lesson.updatedAt,
-      isLocked: lesson.userLesson
-        ? lesson.userLesson.isLocked
-        : lesson.isLocked
+      isLocked: lesson.UserLessons?.isLocked ?? false // إذا ما موجودة، افترض false
     }));
 
-    res.json({ unlockedLessons: result });
+    res.status(200).json({ unlockedLessons: lessonsWithStatus });
   } catch (err) {
-    console.error("❌ Error fetching lessons:", err);
+    console.error("❌ Error fetching user lessons status:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
