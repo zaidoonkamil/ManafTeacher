@@ -43,6 +43,7 @@ router.get("/users/:userId/lessons-status", async (req, res) => {
   }
 });
 
+
 router.patch("/lessons/unlock-all", async (req, res) => {
   try {
     const [updatedCount] = await UserLessons.update(
