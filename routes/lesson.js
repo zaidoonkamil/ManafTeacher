@@ -10,15 +10,22 @@ const User = require("../models/user");
 
 router.patch("/lessons/add-pdf-url-column", async (req, res) => {
   try {
-    // نضيف العمود pdfUrl إذا لم يكن موجود
+    // إضافة العمود pdfUrl (تأكد أن العمود غير موجود قبل التشغيل)
     await sequelize.query(
-      `ALTER TABLE Lessons ADD COLUMN IF NOT EXISTS pdfUrl VARCHAR(255) DEFAULT NULL`
+      `ALTER TABLE Lessons ADD COLUMN pdfUrl VARCHAR(255) DEFAULT NULL`
     );
 
     res.status(200).json({
       message: "✅ تم إضافة العمود pdfUrl لكل الدروس بنجاح."
     });
   } catch (err) {
+    // إذا الخطأ بسبب أن العمود موجود بالفعل
+    if (err.original && err.original.errno === 1060) { // 1060 = Duplicate column name
+      return res.status(200).json({
+        message: "✅ العمود pdfUrl موجود بالفعل."
+      });
+    }
+
     console.error("❌ خطأ أثناء إضافة العمود pdfUrl:", err);
     res.status(500).json({
       error: "Internal Server Error",
